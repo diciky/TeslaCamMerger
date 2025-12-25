@@ -11,7 +11,30 @@ fi
 
 # 检查依赖
 echo "Checking dependencies..."
-python3 -m pip install pyinstaller pywebview
+python3 -m pip install -r requirements.txt
+
+# 确定 FFmpeg 路径
+FFMPEG_BIN="ffmpeg"
+FFPROBE_BIN="ffprobe"
+
+# 优先检查当前目录是否有二进制文件 (用于 Actions)
+if [ -f "./ffmpeg" ]; then
+    FFMPEG_BIN="./ffmpeg"
+fi
+if [ -f "./ffprobe" ]; then
+    FFPROBE_BIN="./ffprobe"
+fi
+
+# 如果还是没找到且是 Mac 且在本地运行，尝试 Homebrew 路径作为兜底
+if [[ "$OSTYPE" == "darwin"* ]] && [ "$FFMPEG_BIN" == "ffmpeg" ]; then
+    if [ -f "/opt/homebrew/bin/ffmpeg" ]; then
+        FFMPEG_BIN="/opt/homebrew/bin/ffmpeg"
+        FFPROBE_BIN="/opt/homebrew/bin/ffprobe"
+    elif [ -f "/usr/local/bin/ffmpeg" ]; then
+        FFMPEG_BIN="/usr/local/bin/ffmpeg"
+        FFPROBE_BIN="/usr/local/bin/ffprobe"
+    fi
+fi
 
 # 清理旧构建
 echo "Cleaning up..."
@@ -25,8 +48,8 @@ python3 -m PyInstaller --noconfirm --windowed --name "$APP_NAME" \
     --icon "icon.icns" \
     --add-data "index.html:." \
     --add-data "index.css:." \
-    --add-binary "/opt/homebrew/bin/ffmpeg:." \
-    --add-binary "/opt/homebrew/bin/ffprobe:." \
+    --add-binary "$FFMPEG_BIN:." \
+    --add-binary "$FFPROBE_BIN:." \
     --hidden-import "uvicorn" \
     --hidden-import "webview" \
     --hidden-import "uvicorn.logging" \

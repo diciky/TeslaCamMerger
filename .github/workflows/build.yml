@@ -1,4 +1,4 @@
-name: Build Windows App
+name: Build Multi-Platform Apps
 
 on:
   push:
@@ -6,9 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -23,7 +22,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Download FFmpeg
+    - name: Download FFmpeg (Windows)
       shell: pwsh
       run: |
         Invoke-WebRequest -Uri "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip" -OutFile "ffmpeg.zip"
@@ -39,7 +38,7 @@ jobs:
       run: |
         python -c "from PIL import Image; img = Image.open('icon.png'); img.save('icon.ico', sizes=[(16,16), (32,32), (48,48), (64,64), (128,128), (256,256)])"
 
-    - name: Build with PyInstaller
+    - name: Build Windows App with PyInstaller
       run: |
         python -m PyInstaller --noconfirm --windowed --name "TeslaCamMerger" `
           --icon "icon.ico" `
@@ -61,8 +60,48 @@ jobs:
           --hidden-import "uvicorn.lifespan.on" `
           "backend.py"
 
-    - name: Archive Production Artifact
+    - name: Archive Windows Artifact
       uses: actions/upload-artifact@v4
       with:
         name: TeslaCamMerger_Windows
         path: dist/TeslaCamMerger
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python3 -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Install FFmpeg (macOS)
+      run: |
+        brew install ffmpeg
+        # 将 ffmpeg/ffprobe 移动到当前目录以便 build_app.sh 识别
+        cp $(which ffmpeg) .
+        cp $(which ffprobe) .
+
+    - name: Build macOS App & DMG
+      run: |
+        chmod +x build_app.sh
+        ./build_app.sh
+
+    - name: Archive macOS Artifact (App)
+      uses: actions/upload-artifact@v4
+      with:
+        name: TeslaCamMerger_macOS_App
+        path: dist/TeslaCamMerger.app
+
+    - name: Archive macOS Artifact (DMG)
+      uses: actions/upload-artifact@v4
+      with:
+        name: TeslaCamMerger_macOS_DMG
+        path: dist/*.dmg
