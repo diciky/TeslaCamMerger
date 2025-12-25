@@ -107,7 +107,6 @@ jobs:
         path: dist/*.dmg
 
   release:
-    if: startsWith(github.ref, 'refs/tags/')
     needs: [build-windows, build-macos]
     runs-on: ubuntu-latest
     permissions:
@@ -123,9 +122,22 @@ jobs:
       with:
         name: TeslaCamMerger_macOS_DMG
 
+    - name: Set Release Version
+      id: version
+      shell: bash
+      run: |
+        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          REF_NAME="${{ github.ref }}"
+          echo "tag=${REF_NAME#refs/tags/}" >> $GITHUB_OUTPUT
+        else
+          echo "tag=v0.1.${{ github.run_number }}" >> $GITHUB_OUTPUT
+        fi
+
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
+        tag_name: ${{ steps.version.outputs.tag }}
+        name: TeslaCam Merger ${{ steps.version.outputs.tag }}
         files: |
           TeslaCamMerger_Windows.zip
           *.dmg
