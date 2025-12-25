@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+sse-starlette
+pywebview
+pyinstaller
+Pillow

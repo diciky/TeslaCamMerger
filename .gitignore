@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+ENV/
+
+# Packaging
+dist/
+build/
+*.spec
+
+# Logs
+*.log
+
+# Multimedia
+*.mp4
+*.MOV
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+TeslaCamMerger_FullProject.zip
+icon.ico
+icon.icns
+ffmpeg.exe
+ffprobe.exe

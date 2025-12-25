@@ -1,0 +1,417 @@
+:root {
+    --tesla-red: #e82127;
+    --tesla-blue: #3e6ae1;
+    --neon-purple: #a855f7;
+    --neon-blue: #0ea5e9;
+    --bg-dark: #0a0a0a;
+    --sidebar-bg: #111111;
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-white: #ffffff;
+    --text-muted: #8e8e93;
+    --terminal-green: #4ade80;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-white);
+    overflow: hidden;
+    height: 100vh;
+}
+
+.app-layout {
+    display: flex;
+    height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 240px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+    z-index: 10;
+}
+
+.tesla-logo {
+    padding: 0 30px 40px;
+    color: var(--text-white);
+}
+
+.nav-menu {
+    flex: 1;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 30px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+}
+
+.nav-item.active,
+.nav-item:hover {
+    color: var(--neon-blue);
+    background: linear-gradient(90deg, rgba(14, 165, 233, 0.1) 0%, transparent 100%);
+}
+
+.nav-item.active .icon-wrap {
+    color: var(--neon-blue);
+}
+
+.icon-wrap svg {
+    height: 20px;
+    width: 200x;
+}
+
+.sidebar-bottom {
+    padding: 20px 30px;
+    opacity: 0.5;
+}
+
+.logo-t svg {
+    width: 32px;
+    height: 32px;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #0a0a0a 100%);
+}
+
+.top-header {
+    height: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 40px;
+}
+
+.neon-title-wrap {
+    border: 2px solid var(--neon-purple);
+    border-radius: 12px;
+    padding: 8px 24px;
+    background: rgba(168, 85, 247, 0.05);
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+}
+
+.neon-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #fff 0%, var(--neon-purple) 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.top-controls {
+    display: flex;
+    gap: 20px;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    position: relative;
+}
+
+.icon-btn svg {
+    width: 22px;
+    height: 22px;
+}
+
+.badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 6px;
+    height: 6px;
+    background: var(--tesla-red);
+    border-radius: 50%;
+}
+
+/* Content Area */
+.content-area {
+    flex: 1;
+    padding: 20px 40px;
+    overflow-y: auto;
+}
+
+.glass-container {
+    background: var(--glass-bg);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 30px;
+    min-height: 400px;
+    position: relative;
+}
+
+.panel-header {
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.active-tab {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--text-muted);
+}
+
+.path-inputs {
+    display: none;
+    /* 隐藏在背景中 */
+}
+
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.video-card {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+}
+
+.video-thumb img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    opacity: 0.7;
+}
+
+.video-info {
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Floating Progress - THE KEY ELEMENT */
+.floating-progress {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 500px;
+    background: rgba(20, 20, 20, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--neon-purple);
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 0 50px rgba(168, 85, 247, 0.2);
+}
+
+.floating-progress h2 {
+    font-size: 1.25rem;
+    margin-bottom: 25px;
+    background: linear-gradient(90deg, #fff, var(--neon-purple));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.progress-bar-wrap {
+    height: 40px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1.5px solid var(--neon-blue);
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.2);
+}
+
+.progress-bar {
+    height: 100%;
+    width: 75%;
+    /* DEMO VALUE */
+    background: linear-gradient(90deg, var(--neon-blue), var(--secondary));
+    background-image: repeating-linear-gradient(45deg,
+            rgba(255, 255, 255, 0.1) 0,
+            rgba(255, 255, 255, 0.1) 10px,
+            transparent 10px,
+            transparent 20px);
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.progress-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.5);
+}
+
+.bottom-actions {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    gap: 15px;
+}
+
+.tesla-btn {
+    padding: 12px 30px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    color: white;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.tesla-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.tesla-btn.secondary {
+    background: transparent;
+    border-color: var(--tesla-red);
+    color: var(--tesla-red);
+}
+
+/* Log Window */
+.log-window {
+    position: absolute;
+    bottom: 40px;
+    left: 40%;
+    width: 450px;
+    background: rgba(10, 10, 10, 0.9);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+}
+
+.log-header {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 15px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.window-btns {
+    display: flex;
+    gap: 6px;
+}
+
+.window-btns span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #333;
+}
+
+.log-content {
+    padding: 15px;
+    height: 180px;
+    overflow-y: auto;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    font-size: 0.85rem;
+}
+
+.log-line {
+    margin-bottom: 4px;
+    color: #aaa;
+}
+
+.log-line.success {
+    color: var(--terminal-green);
+}
+
+.log-line.error {
+    color: var(--tesla-red);
+}
+
+.log-line.warning {
+    color: #eab308;
+}
+
+/* Modal Glass */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content.glass {
+    background: rgba(30, 30, 30, 0.9);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    width: 500px;
+    padding: 25px;
+}
+
+.folder-list {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 15px;
+}
+
+.folder-item {
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.folder-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.path-inputs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.path-inputs input {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    flex: 1;
+    cursor: pointer;
+}

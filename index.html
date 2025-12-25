@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>特斯拉行车记录仪视频合并</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- 左侧导航栏 -->
+        <aside class="sidebar">
+            <div class="tesla-logo" onclick="location.reload()">
+                <svg viewBox="0 0 350 40" fill="currentColor">
+                    <!-- TESLA Wordmark -->
+                    <g transform="scale(0.08) translate(-200, -380)">
+                        <path
+                            d="m28.524 388.986c0.812 3.167 3.554 6.404 7.316 7.215h11.37l0.58 0.229v28.691h7.1v-28.691l0.645-0.229h11.38c3.804-0.98 6.487-4.048 7.285-7.215v-0.07h-45.676v0.07" />
+                        <path
+                            d="m98.795 425.202h27.011c3.758-0.747 6.551-4.058 7.334-7.263h-41.679c0.778 3.206 3.612 6.516 7.334 7.263" />
+                        <path
+                            d="m98.795 410.485h27.011c3.758-0.741 6.551-4.053 7.334-7.262h-41.679c0.778 3.21 3.612 6.521 7.334 7.262" />
+                        <path
+                            d="m98.795 396.163h27.011c3.758-0.749 6.551-4.058 7.334-7.265h-41.679c0.778 3.207 3.612 6.516 7.334 7.265" />
+                        <path
+                            d="m160.398 396.094h24.954c3.762-1.093 6.921-3.959 7.691-7.136h-39.64v21.415h32.444v7.515l-25.449 0.02c-3.988 1.112-7.37 3.79-9.057 7.327l2.062-0.038h39.415v-21.944h-32.42v-7.159" />
+                        <path
+                            d="m245.319 425.206c3.543-1.502 5.449-4.1 6.179-7.14h-31.517l0.02-29.118-7.065 0.02v36.238h32.383" />
+                        <path
+                            d="m272.845 396.192h27.02c3.753-0.746 6.544-4.058 7.331-7.262h-41.681c0.779 3.205 3.611 6.516 7.330 7.262" />
+                        <path d="m266.601 403.28v21.912h7.027v-14.589h25.575v14.589h7.022v-21.874l-39.624-0.038" />
+                    </g>
+                    <!-- T Symbol -->
+                    <path transform="scale(0.06) translate(400, -50)"
+                        d="M 173.146,317.299 208.622,117.78 c 33.815,0 44.481,3.708 46.021,18.843 0,0 22.684,-8.458 34.125,-25.636 C 244.122,90.299 199.263,89.366 199.263,89.366 l -26.176,31.882 0.059,-0.004 -26.176,-31.883 c 0,0 -44.86,0.934 -89.5,21.622 11.431,17.178 34.124,25.636 34.124,25.636 1.549,-15.136 12.202,-18.844 45.79,-18.868 l 35.762,199.548" />
+                    <path transform="scale(0.06) translate(400, -50)"
+                        d="m 173.132,80.157 c 36.09,-0.276 77.399,5.583 119.687,24.014 5.652,-10.173 7.105,-14.669 7.105,-14.669 C 253.697,71.213 210.406,64.954 173.127,64.797 135.85,64.954 92.561,71.214 46.34,89.502 c 0,0 2.062,5.538 7.1,14.669 42.28,-18.431 83.596,-24.29 119.687,-24.014 h 0.005" />
+                </svg>
+            </div>
+            <nav class="nav-menu">
+                <div class="nav-item active" id="nav-browser">
+                    <div class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"></path>
+                        </svg></div>
+                    <span>文件浏览器</span>
+                </div>
+                <div class="nav-item" onclick="openPicker('source-path')">
+                    <div class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path
+                                d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
+                            </path>
+                        </svg></div>
+                    <span>合并设置</span>
+                </div>
+                <div class="nav-item" onclick="alert('历史功能正在开发中...')">
+                    <div class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg></div>
+                    <span>历史记录</span>
+                </div>
+                <div class="nav-item" onclick="alert('账户功能正在开发中...')">
+                    <div class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg></div>
+                    <span>账户</span>
+                </div>
+            </nav>
+            <div class="sidebar-bottom">
+                <div class="logo-t">
+                    <svg viewBox="0 0 350 350" fill="currentColor">
+                        <path
+                            d="M 173.146,317.299 208.622,117.78 c 33.815,0 44.481,3.708 46.021,18.843 0,0 22.684,-8.458 34.125,-25.636 C 244.122,90.299 199.263,89.366 199.263,89.366 l -26.176,31.882 0.059,-0.004 -26.176,-31.883 c 0,0 -44.86,0.934 -89.5,21.622 11.431,17.178 34.124,25.636 34.124,25.636 1.549,-15.136 12.202,-18.844 45.79,-18.868 l 35.762,199.548" />
+                        <path
+                            d="m 173.132,80.157 c 36.09,-0.276 77.399,5.583 119.687,24.014 5.652,-10.173 7.105,-14.669 7.105,-14.669 C 253.697,71.213 210.406,64.954 173.127,64.797 135.85,64.954 92.561,71.214 46.34,89.502 c 0,0 2.062,5.538 7.1,14.669 42.28,-18.431 83.596,-24.29 119.687,-24.014 h 0.005" />
+                    </svg>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="neon-title-wrap">
+                    <h1 class="neon-title">特斯拉行车记录仪视频合并</h1>
+                </div>
+                <div class="top-controls">
+                    <button class="icon-btn" onclick="addLog('暂无新通知', 'system')"><svg viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 01-3.46 0"></path>
+                        </svg><span class="badge"></span></button>
+                    <button class="icon-btn" onclick="openPicker('source-path')"><svg viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path
+                                d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1V11a2 2 0 01-2-2 2 2 0 012-2v-.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00.33-1.82l.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2v.09a1.65 1.65 0 00-1.51 1z">
+                            </path>
+                        </svg></button>
+                    <button class="icon-btn" onclick="alert('更多选项...')"><svg viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="1"></circle>
+                            <circle cx="19" cy="12" r="1"></circle>
+                            <circle cx="5" cy="12" r="1"></circle>
+                        </svg></button>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <div class="glass-container">
+                    <div class="panel-header">
+                        <span class="active-tab">TeslaCam 资源预览</span>
+                        <div class="panel-meta">
+                            <label><input type="checkbox" id="setting-auto-merge"> 自动重连</label>
+                        </div>
+                    </div>
+
+                    <div class="path-display-bar">
+                        <div class="path-chip" onclick="openPicker('source-path')">
+                            <small>源路径:</small> <span id="source-path-label">/Volumes/TESLADRIVE/TeslaCam</span>
+                        </div>
+                        <div class="path-chip">
+                            <small>目标日期:</small>
+                            <div class="tesla-datepicker" id="tesla-datepicker">
+                                <div class="datepicker-value" onclick="toggleCalendar()">全部日期</div>
+                                <div class="datepicker-calendar" id="datepicker-calendar">
+                                    <div class="calendar-header">
+                                        <button onclick="changeMonth(-1); event.stopPropagation()">&lt;</button>
+                                        <span id="calendar-month-year">2023年12月</span>
+                                        <button onclick="changeMonth(1); event.stopPropagation()">&gt;</button>
+                                    </div>
+                                    <div class="calendar-weekdays">
+                                        <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+                                    </div>
+                                    <div class="calendar-days" id="calendar-days"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="selected-date" value="">
+                        <input type="hidden" id="source-path" value="/Volumes/TESLADRIVE/TeslaCam">
+                        <input type="hidden" id="output-path" value="/Users/diciky/cam">
+                    </div>
+
+                    <div class="video-grid" id="video-grid">
+                        <div class="placeholder-msg">正在扫描源目录以预览视频...</div>
+                    </div>
+
+                    <!-- 视频选择与详细列表 (NEW) -->
+                    <div id="video-selection-area" class="video-selection-area" style="display: none;">
+                        <div class="selection-header">
+                            <span class="selection-title"><span id="selection-date-label"></span> 视频分片 (共 <span
+                                    id="total-clips-count">0</span> 个)</span>
+                            <div class="selection-controls">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="select-all-checkbox" checked
+                                        onchange="toggleSelectAll()"> 全选
+                                </label>
+                            </div>
+                        </div>
+                        <div class="video-list-container" id="video-list-container">
+                            <!-- 动态生成视频列表 -->
+                        </div>
+                    </div>
+
+                    <!-- Floating Progress Card -->
+                    <div id="progress-container" class="floating-card progress-card" style="display: none;">
+                        <div class="card-header">
+                            <span class="card-title">视频处理中...</span>
+                            <span id="progress-percent" class="card-value">0%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div id="progress-bar" class="progress-bar-fill"></div>
+                        </div>
+                        <!-- 详细子任务区域 -->
+                        <div id="sub-tasks-header" class="sub-tasks-header" onclick="toggleSubTasks()">
+                            <span>详细任务状态</span>
+                            <i id="toggle-icon" class="fas fa-chevron-down"></i>
+                        </div>
+                        <div id="sub-tasks-list" class="sub-tasks-list">
+                            <!-- 动态生成的子任务进度将显示在这里 -->
+                        </div>
+                        <div id="progress-detail" class="card-footer">准备处理任务...</div>
+                    </div>
+
+                    <div class="bottom-actions">
+                        <!-- 移除少量文件测试开关 -->
+                        <button id="start-btn" class="tesla-btn">开始合并</button>
+                        <button id="stop-btn" class="tesla-btn secondary" disabled>停止</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 终端日志窗口 -->
+            <div class="log-window">
+                <div class="log-header">
+                    <span>Log console</span>
+                    <div class="window-btns"><span onclick="clearLog()"></span><span></span><span></span></div>
+                </div>
+                <div class="log-content" id="log-console">
+                    <div class="log-line system">系统就绪，等待指令...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 文件夹选择器弹窗 -->
+    <div id="picker-modal" class="modal">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h3>选择文件夹</h3>
+                <button class="close-btn" onclick="closePicker()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="current-path-bar">
+                    <button onclick="goParent()" id="up-btn">..</button>
+                    <span id="current-display">/</span>
+                </div>
+                <div id="folder-list" class="folder-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="tesla-btn secondary small" onclick="closePicker()">取消</button>
+                <button class="tesla-btn small" onclick="confirmPicker()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 视频播放器弹窗 -->
+    <div id="video-modal" class="modal">
+        <div class="modal-content glass video-player-content">
+            <div class="modal-header">
+                <h3 id="video-modal-title">视频预览</h3>
+                <button class="close-btn" onclick="closeVideoPlayer()">&times;</button>
+            </div>
+            <div class="video-wrapper">
+                <video id="preview-player" controls autoplay>
+                    您的浏览器不支持视频播放。
+                </video>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const sourceInput = document.getElementById('source-path');
+        const outputInput = document.getElementById('output-path');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        const progressPercent = document.getElementById('progress-percent');
+        const statusTitle = document.getElementById('status-title');
+        const progressDetail = document.getElementById('progress-detail');
+        const logConsole = document.getElementById('log-console');
+        const videoGrid = document.getElementById('video-grid');
+
+        let currentTargetId = '';
+        let currentPath = '/';
+        let eventSource = null;
+
+        function addLog(msg, type = '') {
+            if (msg.startsWith("PROGRESS:")) return;
+            const item = document.createElement('div');
+            item.className = 'log-line ' + (type || '');
+            item.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logConsole.appendChild(item);
+            logConsole.scrollTop = logConsole.scrollHeight;
+        }
+
+        let availableDates = [];
+        let calendarDate = new Date();
+        let selectedDate = "";
+
+        // Video Selection Global State
+        let currentVideoList = [];
+        let selectedTimestamps = new Set();
+
+        async function updateDateList(path) {
+            try {
+                const resp = await fetch(`/api/dates?path=${encodeURIComponent(path)}`);
+                const data = await resp.json();
+                availableDates = data.dates || [];
+                renderCalendar();
+            } catch (e) {
+                console.error("加载日期失败:", e);
+            }
+        }
+
+        function toggleCalendar() {
+            const cal = document.getElementById('datepicker-calendar');
+            const isVisible = cal.style.display === 'block';
+            cal.style.display = isVisible ? 'none' : 'block';
+            if (!isVisible) renderCalendar();
+        }
+
+        function renderCalendar() {
+            const year = calendarDate.getFullYear();
+            const month = calendarDate.getMonth();
+            document.getElementById('calendar-month-year').textContent = `${year}年${month + 1}月`;
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            const daysGrid = document.getElementById('calendar-days');
+            daysGrid.innerHTML = '';
+
+            // 全部日期选项
+            const allOpt = document.createElement('div');
+            allOpt.className = 'calendar-day-item full-width' + (selectedDate === "" ? " active" : "");
+            allOpt.textContent = "全部日期 (全量合并)";
+            allOpt.onclick = (e) => { e.stopPropagation(); selectDate(""); };
+            daysGrid.appendChild(allOpt);
+
+            for (let i = 0; i < firstDay; i++) {
+                daysGrid.appendChild(document.createElement('div'));
+            }
+
+            for (let d = 1; d <= lastDate; d++) {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'calendar-day-item';
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+                if (availableDates.includes(dateStr)) {
+                    dayEl.classList.add('has-data');
+                }
+                if (selectedDate === dateStr) {
+                    dayEl.classList.add('active');
+                }
+
+                dayEl.textContent = d;
+                dayEl.onclick = (e) => {
+                    e.stopPropagation();
+                    if (availableDates.includes(dateStr)) {
+                        selectDate(dateStr);
+                    }
+                };
+                daysGrid.appendChild(dayEl);
+            }
+        }
+
+        function changeMonth(delta) {
+            calendarDate.setMonth(calendarDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function selectDate(date) {
+            selectedDate = date;
+            document.getElementById('selected-date').value = date;
+            document.querySelector('.datepicker-value').textContent = date || "全部日期";
+            document.getElementById('datepicker-calendar').style.display = 'none';
+            renderCalendar();
+
+            // 隐藏通用预览，显示特定日期的视频选择区
+            if (date) {
+                document.getElementById('video-grid').style.display = 'none';
+                document.getElementById('video-selection-area').style.display = 'block';
+                fetchVideosForDate(date);
+            } else {
+                document.getElementById('video-grid').style.display = 'grid';
+                document.getElementById('video-selection-area').style.display = 'none';
+                fetchPreview();
+            }
+        }
+
+        async function fetchVideosForDate(date) {
+            const path = sourceInput.value;
+            const container = document.getElementById('video-list-container');
+            container.innerHTML = '<div class="placeholder-msg">正在加载视频列表...</div>';
+
+            try {
+                const resp = await fetch(`/api/videos?date=${date}&path=${encodeURIComponent(path)}`);
+                const data = await resp.json();
+
+                if (data.status === 'success') {
+                    currentVideoList = data.videos;
+                    selectedTimestamps = new Set(currentVideoList.map(v => v.timestamp)); // 默认全选
+                    document.getElementById('total-clips-count').textContent = currentVideoList.length;
+                    document.getElementById('selection-date-label').textContent = date; // Update date label
+                    document.getElementById('select-all-checkbox').checked = true;
+                    renderVideoList();
+                } else {
+                    container.innerHTML = `<div class="placeholder-msg error">${data.message}</div>`;
+                }
+            } catch (e) {
+                container.innerHTML = '<div class="placeholder-msg error">加载失败</div>';
+            }
+        }
+
+        function renderVideoList() {
+            const container = document.getElementById('video-list-container');
+            container.innerHTML = '';
+
+            if (currentVideoList.length === 0) {
+                container.innerHTML = '<div class="placeholder-msg">该日期下没有找到视频文件</div>';
+                return;
+            }
+
+            currentVideoList.forEach(video => {
+                const item = document.createElement('div');
+                item.className = 'video-list-item ' + (selectedTimestamps.has(video.timestamp) ? 'selected' : '');
+
+                // 格式化时间戳显示 HH:MM:SS
+                const timeLabel = video.timestamp.split('_')[1].replace(/-/g, ':');
+                const isSelected = selectedTimestamps.has(video.timestamp);
+
+                item.innerHTML = `
+                    <div class="video-item-check">
+                        <input type="checkbox" id="cb-${video.timestamp}" ${isSelected ? 'checked' : ''}>
+                    </div>
+                    <div class="video-item-info" onclick="toggleSelection('${video.timestamp}')">
+                        <span class="video-time">${timeLabel}</span>
+                        <span class="video-cameras">摄像头: ${video.cameras.join(', ')}</span>
+                    </div>
+                    <div class="video-item-preview">
+                        <button class="icon-btn-small" onclick="playVideo('${video.preview_path}', '${video.timestamp}')">
+                            ▶ 预览
+                        </button>
+                    </div>
+                `;
+
+                // 绑定 checkbox 事件
+                const cb = item.querySelector('input[type="checkbox"]');
+                cb.onchange = (e) => {
+                    if (e.target.checked) selectedTimestamps.add(video.timestamp);
+                    else selectedTimestamps.delete(video.timestamp);
+                    updateSelectAllState();
+                    renderVideoList(); // 重新渲染以更新样式
+                };
+
+                container.appendChild(item);
+            });
+        }
+
+        function toggleSelection(ts) {
+            const cb = document.getElementById(`cb-${ts}`);
+            cb.click();
+        }
+
+        function updateSelectAllState() {
+            const allChecked = currentVideoList.length > 0 && selectedTimestamps.size === currentVideoList.length;
+            document.getElementById('select-all-checkbox').checked = allChecked;
+        }
+
+        function toggleSelectAll() {
+            const isChecked = document.getElementById('select-all-checkbox').checked;
+            if (isChecked) {
+                selectedTimestamps = new Set(currentVideoList.map(v => v.timestamp));
+            } else {
+                selectedTimestamps.clear();
+            }
+            renderVideoList();
+        }
+
+        function playVideo(path, ts) {
+            const modal = document.getElementById('video-modal');
+            const player = document.getElementById('preview-player');
+            const title = document.getElementById('video-modal-title');
+
+            title.textContent = `预览: ${ts}`;
+            // 使用 /api/stream 接口
+            player.src = `/api/stream?path=${encodeURIComponent(path)}`;
+            modal.style.display = 'flex';
+        }
+
+        function closeVideoPlayer() {
+            const modal = document.getElementById('video-modal');
+            const player = document.getElementById('preview-player');
+            player.pause();
+            player.src = '';
+            modal.style.display = 'none';
+        }
+
+        function clearLog() {
+            logConsole.innerHTML = '<div class="log-line system">日志已清空...</div>';
+        }
+
+        async function startTask() {
+            const source_path = sourceInput.value;
+            const output_path = outputInput.value;
+            const target_date = document.getElementById('selected-date').value;
+            // 获取选中的时间戳列表 (如果不是全量合并模式)
+            let target_timestamps = null;
+            if (target_date && selectedTimestamps.size > 0 && selectedTimestamps.size < currentVideoList.length) {
+                target_timestamps = Array.from(selectedTimestamps);
+            }
+            // 如果是全选状态，或者没有选择日期，则 target_timestamps 保持 null，后端会自动处理
+
+            let logMsg = "正在启动合并任务...";
+            if (target_date) {
+                logMsg += ` [指定日期: ${target_date}]`;
+                if (target_timestamps) {
+                    logMsg += ` [选中 ${target_timestamps.length} 个特定片段]`;
+                } else {
+                    logMsg += ` [全量 ${selectedTimestamps.size} 个片段]`;
+                }
+            }
+
+            addLog(logMsg, "system");
+            startBtn.disabled = true;
+
+            try {
+                const resp = await fetch('/api/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        source_path,
+                        output_path,
+                        sample_limit: null, // 移除旧的测试限制
+                        target_date: target_date || null,
+                        target_timestamps: target_timestamps
+                    })
+                });
+                const data = await resp.json();
+
+                if (data.status === 'success') {
+                    stopBtn.disabled = false;
+                    progressContainer.style.display = 'block';
+                    initSSE();
+                } else {
+                    addLog(data.message, 'error');
+                    startBtn.disabled = false;
+                }
+            } catch (err) {
+                addLog('无法连接后端逻辑端口', 'error');
+                startBtn.disabled = false;
+            }
+        }
+
+        async function stopTask() {
+            if (confirm("确定要停止任务吗？")) {
+                await fetch('/api/stop', { method: 'POST' });
+                addLog('已发送停止指令', 'warning');
+                stopBtn.disabled = true;
+            }
+        }
+
+        function initSSE() {
+            if (eventSource) eventSource.close();
+            eventSource = new EventSource('/api/events');
+
+            eventSource.onmessage = (e) => {
+                const msg = e.data;
+                if (msg.startsWith("PROGRESS:")) {
+                    const parts = msg.split(':');
+                    const percentRaw = parts[1] || '0%';
+                    const percent = percentRaw.includes('%') ? percentRaw : percentRaw + '%';
+                    const detailFull = parts[2] || '';
+
+                    progressBar.style.width = percent;
+                    progressPercent.textContent = percent;
+                    progressContainer.style.display = 'block';
+
+                    const detailParts = detailFull.split(';');
+                    const mainStatus = detailParts[0];
+                    progressDetail.textContent = mainStatus;
+
+                    const subTasksList = document.getElementById('sub-tasks-list');
+                    if (detailParts.length > 1) {
+                        const activeTasks = detailParts.slice(1);
+                        updateSubTasks(activeTasks);
+                    } else {
+                        subTasksList.innerHTML = '<div class="sub-task-item empty">等待新任务...</div>';
+                    }
+
+                    if (mainStatus.includes("完成") || mainStatus.includes("失败")) {
+                        addLog(msg);
+                    }
+                } else if (msg.startsWith("COMPLETED:")) {
+                    addLog(msg, 'success');
+                    startBtn.disabled = false;
+                    stopBtn.disabled = true;
+                    setTimeout(() => { progressContainer.style.display = 'none'; }, 5000);
+                    eventSource.close();
+                    eventSource = null;
+                } else if (msg.includes("Error") || msg.includes("Failed")) {
+                    addLog(msg, 'error');
+                } else {
+                    addLog(msg);
+                }
+            };
+
+            eventSource.onerror = () => {
+                if (eventSource) {
+                    eventSource.close();
+                    eventSource = null;
+                    setTimeout(initSSE, 3000);
+                }
+            };
+        }
+
+        function updateSubTasks(activeTasks) {
+            const listEl = document.getElementById('sub-tasks-list');
+            listEl.innerHTML = '';
+
+            if (activeTasks.length === 0) {
+                listEl.innerHTML = '<div class="sub-task-item empty">等待新任务...</div>';
+                return;
+            }
+
+            activeTasks.forEach(task => {
+                const name = task.includes(': ') ? task.split(': ')[1] : task.replace('🔥 正在处理: ', '');
+                const item = document.createElement('div');
+                item.className = 'sub-task-item active';
+                item.innerHTML = `
+                    <div class="sub-task-info">
+                        <span class="task-icon">🎞️</span>
+                        <span class="task-name">${name}</span>
+                        <span class="task-type">硬件转码中</span>
+                    </div>
+                    <div class="sub-task-bar">
+                        <div class="sub-task-fill"></div>
+                    </div>
+                `;
+                listEl.appendChild(item);
+            });
+        }
+
+        function toggleSubTasks() {
+            const list = document.getElementById('sub-tasks-list');
+            const icon = document.getElementById('toggle-icon');
+            list.classList.toggle('show');
+            icon.style.transform = list.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+
+        async function fetchPreview() {
+            const path = sourceInput.value;
+            // document.getElementById('source-path-label').textContent = path;
+            document.getElementById('output-path-label').textContent = outputInput.value;
+
+            try {
+                const resp = await fetch(`/api/preview?path=${encodeURIComponent(path)}`);
+                const data = await resp.json();
+                if (data.status === 'success') {
+                    videoGrid.innerHTML = '';
+                    if (data.files.length === 0) {
+                        videoGrid.innerHTML = '<div class="placeholder-msg">该目录下暂无 mp4 录像文件</div>';
+                        return;
+                    }
+                    data.files.forEach(f => {
+                        const card = document.createElement('div');
+                        card.className = 'video-card';
+                        card.innerHTML = `
+                            <div class="video-thumb"><div class="vid-icon">🎬</div></div>
+                            <div class="video-info">
+                                <span>${f.name.substring(0, 16)}...</span>
+                                <span>${f.size}</span>
+                            </div>
+                        `;
+                        videoGrid.appendChild(card);
+                    });
+                }
+            } catch (e) {
+                videoGrid.innerHTML = '<div class="placeholder-msg">预览功能连接失败</div>';
+            }
+        }
+
+        function openPicker(targetId) {
+            currentTargetId = targetId;
+            currentPath = document.getElementById(targetId).value || '/';
+            document.getElementById('picker-modal').style.display = 'flex';
+            loadFolders(currentPath);
+        }
+
+        function closePicker() {
+            document.getElementById('picker-modal').style.display = 'none';
+        }
+
+        function confirmPicker() {
+            const val = currentPath;
+            document.getElementById(currentTargetId).value = val;
+            const labelEl = document.getElementById(currentTargetId + '-label');
+            if (labelEl) labelEl.textContent = val;
+            if (currentTargetId === 'source-path') {
+                updateDateList(val);
+            }
+            closePicker();
+            fetchPreview();
+        }
+
+        async function loadFolders(path) {
+            const listEl = document.getElementById('folder-list');
+            const displayEl = document.getElementById('current-display');
+            listEl.innerHTML = '<div class="log-line">Loading...</div>';
+            displayEl.textContent = path;
+
+            try {
+                const resp = await fetch(`/api/ls?path=${encodeURIComponent(path)}`);
+                const data = await resp.json();
+                if (data.status === 'success') {
+                    currentPath = data.current;
+                    listEl.innerHTML = '';
+                    if (data.parent) {
+                        const up = document.createElement('div');
+                        up.className = 'folder-item parent';
+                        up.innerHTML = '<span>📁 .. (返回上一级)</span>';
+                        up.onclick = () => loadFolders(data.parent);
+                        listEl.appendChild(up);
+                    }
+                    data.items.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'folder-item';
+                        div.innerHTML = `<span>📁 ${item.name}</span>`;
+                        div.onclick = () => loadFolders(item.path);
+                        listEl.appendChild(div);
+                    });
+                }
+            } catch (e) {
+                listEl.innerHTML = '<div class="log-line error">无法加载目录</div>';
+            }
+        }
+
+        function goParent() {
+            const parts = currentPath.split('/');
+            if (parts.length > 2) {
+                parts.pop();
+                loadFolders(parts.join('/') || '/');
+            } else if (parts.length === 2 && parts[1] !== '') {
+                loadFolders('/');
+            }
+        }
+
+        startBtn.onclick = startTask;
+        stopBtn.onclick = stopTask;
+
+        async function checkStatus() {
+            try {
+                const resp = await fetch('/api/status');
+                const data = await resp.json();
+                if (data.logs && data.logs.length > 0) {
+                    logConsole.innerHTML = '';
+                    data.logs.forEach(l => {
+                        const div = document.createElement('div');
+                        div.className = 'log-line';
+                        if (l.includes('Successfully') || l.includes('COMPLETED')) div.classList.add('success');
+                        if (l.includes('Error') || l.includes('Failed')) div.classList.add('error');
+                        if (l.includes('Scanning') || l.includes('Processing') || l.includes('PROGRESS')) div.classList.add('system');
+                        div.textContent = l;
+                        logConsole.appendChild(div);
+                    });
+                    logConsole.scrollTop = logConsole.scrollHeight;
+                }
+                if (data.is_running) {
+                    startBtn.disabled = true;
+                    stopBtn.disabled = false;
+                    progressContainer.style.display = 'block';
+                    const prog = data.progress + (String(data.progress).includes('%') ? '' : '%');
+                    progressBar.style.width = prog;
+                    progressPercent.textContent = prog;
+                    initSSE();
+                }
+            } catch (e) { }
+        }
+
+        // 点击页面其他位置关闭日历
+        document.addEventListener('click', (e) => {
+            const datepicker = document.getElementById('tesla-datepicker');
+            const calendar = document.getElementById('datepicker-calendar');
+            if (!datepicker.contains(e.target)) {
+                calendar.style.display = 'none';
+            }
+        });
+
+        checkStatus();
+        fetchPreview();
+        updateDateList(sourceInput.value);
+        // --- Log Window Draggable Logic ---
+        (function initLogDraggable() {
+            const logWindow = document.querySelector('.log-window');
+            const logHeader = document.querySelector('.log-header');
+            let isDragging = false;
+            let startX, startY, initialTop, initialRight;
+
+            logHeader.style.cursor = 'move';
+
+            logHeader.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+
+                // 获取当前计算出的样式值
+                const rect = logWindow.getBoundingClientRect();
+                initialTop = rect.top;
+                // 因为 CSS 使用了 right: 40px，我们这里改为使用 absolute 定位来跟随
+                // 但为了保持原有的响应式，我们手动更新 top 和 right
+                initialRight = window.innerWidth - rect.right;
+
+                logWindow.style.opacity = '0.7';
+                logWindow.style.transition = 'none'; // 移动时关闭平滑过渡
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+
+            function onMouseMove(e) {
+                if (!isDragging) return;
+
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+
+                const newTop = initialTop + dy;
+                const newRight = initialRight - dx;
+
+                logWindow.style.top = `${newTop}px`;
+                logWindow.style.right = `${newRight}px`;
+                logWindow.style.bottom = 'auto'; // 确保 bottom 不会冲突
+            }
+
+            function onMouseUp() {
+                isDragging = false;
+                logWindow.style.opacity = '1';
+                logWindow.style.transition = '';
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+        })();
+    </script>
+</body>
+
+</html>
