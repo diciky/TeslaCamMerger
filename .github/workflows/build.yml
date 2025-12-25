@@ -3,6 +3,8 @@ name: Build Multi-Platform Apps
 on:
   push:
     branches: [ main ]
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 jobs:
@@ -60,11 +62,16 @@ jobs:
           --hidden-import "uvicorn.lifespan.on" `
           "backend.py"
 
+    - name: Zip Windows App
+      shell: pwsh
+      run: |
+        Compress-Archive -Path "dist/TeslaCamMerger" -DestinationPath "TeslaCamMerger_Windows.zip"
+
     - name: Archive Windows Artifact
       uses: actions/upload-artifact@v4
       with:
         name: TeslaCamMerger_Windows
-        path: dist/TeslaCamMerger
+        path: TeslaCamMerger_Windows.zip
 
   build-macos:
     runs-on: macos-latest
@@ -85,7 +92,6 @@ jobs:
     - name: Install FFmpeg (macOS)
       run: |
         brew install ffmpeg
-        # 将 ffmpeg/ffprobe 移动到当前目录以便 build_app.sh 识别
         cp $(which ffmpeg) .
         cp $(which ffprobe) .
 
@@ -94,14 +100,35 @@ jobs:
         chmod +x build_app.sh
         ./build_app.sh
 
-    - name: Archive macOS Artifact (App)
-      uses: actions/upload-artifact@v4
-      with:
-        name: TeslaCamMerger_macOS_App
-        path: dist/TeslaCamMerger.app
-
     - name: Archive macOS Artifact (DMG)
       uses: actions/upload-artifact@v4
       with:
         name: TeslaCamMerger_macOS_DMG
         path: dist/*.dmg
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Download Windows Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: TeslaCamMerger_Windows
+
+    - name: Download macOS Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: TeslaCamMerger_macOS_DMG
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          TeslaCamMerger_Windows.zip
+          *.dmg
+        generate_release_notes: true
+        draft: false
+        prerelease: false
