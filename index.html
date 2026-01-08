@@ -38,6 +38,7 @@
                     <path transform="scale(0.06) translate(400, -50)"
                         d="m 173.132,80.157 c 36.09,-0.276 77.399,5.583 119.687,24.014 5.652,-10.173 7.105,-14.669 7.105,-14.669 C 253.697,71.213 210.406,64.954 173.127,64.797 135.85,64.954 92.561,71.214 46.34,89.502 c 0,0 2.062,5.538 7.1,14.669 42.28,-18.431 83.596,-24.29 119.687,-24.014 h 0.005" />
                 </svg>
+                <div class="app-version">v0.1.0</div>
             </div>
             <nav class="nav-menu">
                 <div class="nav-item active sidebar-item" onclick="switchView('browser')">
@@ -188,31 +189,36 @@
                         </div>
                     </div>
                 </div>
-            </div> <!-- End browser-view -->
+                <!-- Browser view ends, but content-area stays open -->
 
-            <!-- History View -->
-            <div id="history-view" class="content-panel" style="display: none;">
-                <div class="glass-container full-height">
-                    <div class="panel-header">
-                        <span class="active-tab">历史记录</span>
-                        <div class="panel-meta">
-                            <button onclick="refreshHistory()" class="tesla-btn secondary small">刷新</button>
-                            <button onclick="clearHistory()" class="tesla-btn secondary small"
-                                style="margin-left: 10px;">清空</button>
+                <!-- History View -->
+                <div id="history-view" class="content-panel" style="display: none;">
+                    <div class="glass-container full-height">
+                        <div class="panel-header">
+                            <span class="active-tab">历史记录</span>
+                            <div class="panel-meta">
+                                <button onclick="refreshHistory()" class="tesla-btn secondary small">刷新</button>
+                                <button onclick="clearHistory()" class="tesla-btn secondary small"
+                                    style="margin-left: 10px;">清空</button>
+                            </div>
+                        </div>
+                        <div class="history-list" id="history-list">
+                            <!-- History items will be injected here -->
+                            <div class="empty-state">加载中...</div>
                         </div>
                     </div>
-                    <div class="history-list" id="history-list">
-                        <!-- History items will be injected here -->
-                        <div class="empty-state">加载中...</div>
-                    </div>
                 </div>
-            </div>
+            </div> <!-- End content-area -->
 
             <!-- 终端日志窗口 -->
             <div class="log-window">
                 <div class="log-header">
                     <span>Log console</span>
-                    <div class="window-btns"><span onclick="clearLog()"></span><span></span><span></span></div>
+                    <div class="window-btns">
+                        <span onclick="clearLog()" title="Clear Log"></span>
+                        <span onclick="toggleLogMin()" title="Minimize"></span>
+                        <span></span>
+                    </div>
                 </div>
                 <div class="log-content" id="log-console">
                     <div class="log-line system">系统就绪，等待指令...</div>
@@ -798,6 +804,12 @@
                 sidebarItems[1].classList.add('active');
                 refreshHistory();
             }
+        }
+
+
+        function toggleLogMin() {
+            const win = document.querySelector('.log-window');
+            win.classList.toggle('minimized');
         }
 
         async function refreshHistory() {

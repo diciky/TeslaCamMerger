@@ -23,17 +23,23 @@ body {
     background-color: var(--bg-dark);
     color: var(--text-white);
     overflow: hidden;
+    /* 防止整个页面滚动 */
     height: 100vh;
 }
 
 .app-layout {
-    display: flex;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    /* 侧边栏宽度 260px，右侧自适应 */
     height: 100vh;
+    overflow: hidden;
 }
 
 /* Sidebar */
+/* 侧边栏 (Sidebar) - 可调整宽度 */
 .sidebar {
     width: 240px;
+    /* 如果觉得侧边栏太宽或太窄，可修改这里 */
     background: var(--sidebar-bg);
     border-right: 1px solid var(--glass-border);
     display: flex;
@@ -105,8 +111,10 @@ body {
     background: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #0a0a0a 100%);
 }
 
+/* 顶部导航栏 (Header) - 控制整体界面上移/下移 */
 .top-header {
     height: 60px;
+    /* 减小此值可让界面更紧凑 */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -165,12 +173,14 @@ body {
 }
 
 /* Content Area */
+/* 主内容区域 (Content) - 这里包含所有右侧内容 */
 .content-area {
     flex: 1;
     padding: 0 40px 10px 40px;
+    /* 上右下左内边距，想调整内容位置改这里 */
     overflow-y: auto;
     display: flex;
-    /* Make it a flex container so child panel fills it */
+    /* 弹性容器，确保子元素（如玻璃面板）能撑满 */
     flex-direction: column;
 }
 
@@ -182,14 +192,17 @@ body {
     /* Important for nested scroll */
 }
 
+/* 玻璃拟态容器 (Glass Container) - 核心视觉风格 */
 .glass-container {
     background: var(--glass-bg);
     backdrop-filter: blur(50px);
+    /* 模糊程度 */
     -webkit-backdrop-filter: blur(50px);
     border: 1px solid var(--glass-border);
     border-radius: 28px;
     padding: 30px;
-    min-height: 500px;
+    height: 100%;
+    /* Ensure full height to match sibling views */
     position: relative;
     display: flex;
     flex-direction: column;
@@ -506,17 +519,28 @@ body {
 }
 
 /* Log Window */
+/* 全局日志窗口 (Log Window) - 悬浮在右上角 */
 .log-window {
     position: absolute;
     top: 70px;
+    /* 距离顶部的距离，调大则下移 */
     right: 40px;
+    /* 距离右侧的距离 */
     width: 400px;
+    /* 窗口宽度 */
     background: rgba(0, 0, 0, 0.85);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
     z-index: 100;
+    transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.log-window.minimized {
+    height: 40px !important;
+    /* Header height */
+    overflow: hidden;
 }
 
 .log-header {
@@ -545,6 +569,11 @@ body {
 
 .window-btns span:first-child:hover {
     background: var(--tesla-red);
+}
+
+/* Secondary button (Minimize) - Yellow hover */
+.window-btns span:nth-child(2):hover {
+    background: #f59e0b;
 }
 
 .log-content {
@@ -984,4 +1013,12 @@ input:checked+.slider:before {
 
 .calendar-day-item.full-width:hover {
     background: rgba(255, 255, 255, 0.12);
+}
+
+.app-version {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-top: 10px;
+    font-family: monospace;
+    opacity: 0.6;
 }
