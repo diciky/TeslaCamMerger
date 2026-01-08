@@ -33,7 +33,7 @@ status = TaskStatus()
 # --- History Manager ---
 import json
 import uuid
-from typing import Dict, Any
+from typing import Dict, Any, List
 from datetime import datetime
 
 class HistoryManager:
