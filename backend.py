@@ -24,18 +24,67 @@ class TaskStatus:
         self.progress = 0
         self.logs = []
         self.merger = None
-        self.queues = [] # 存储所有连接的客户端队列
+        self.queues = []
         self.loop = None
+        self.history_mgr = None
 
 status = TaskStatus()
+
+# --- History Manager ---
+import json
+import uuid
+from typing import Dict, Any
+from datetime import datetime
+
+class HistoryManager:
+    def __init__(self):
+        self.data_dir = os.path.expanduser("~/.teslacam_merger")
+        self.history_file = os.path.join(self.data_dir, "history.json")
+        if not os.path.exists(self.data_dir):
+            os.makedirs(self.data_dir)
+        self.history = self.load_history()
+
+    def load_history(self) -> List[Dict[str, Any]]:
+        if not os.path.exists(self.history_file):
+            return []
+        try:
+            with open(self.history_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception:
+            return []
+
+    def save_history(self):
+        try:
+            with open(self.history_file, 'w', encoding='utf-8') as f:
+                json.dump(self.history, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"Failed to save history: {e}")
+
+    def add_record(self, source_path, output_path, target_date=None, file_size=0):
+        record = {
+            "id": str(uuid.uuid4()),
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "source_path": source_path,
+            "output_path": output_path,
+            "target_date": target_date or "All Dates",
+            "file_size": file_size,
+            "status": "success"
+        }
+        self.history.insert(0, record) # Add to top
+        self.history = self.history[:100] # Limit to 100 records
+        self.save_history()
+
+    def clear_history(self):
+        self.history = []
+        self.save_history()
 
 @app.on_event("startup")
 async def startup_event():
     status.loop = asyncio.get_running_loop()
+    status.history_mgr = HistoryManager()
 
 def progress_callback(message):
     if status.loop:
-        # 广播给所有活跃的 SSE 连接
         for q in status.queues:
             status.loop.call_soon_threadsafe(q.put_nowait, message)
             
@@ -73,14 +122,22 @@ async def start_task(req: StartRequest, background_tasks: BackgroundTasks):
             status.merger = TeslaCamMerger(source, output, progress_callback)
             if target_timestamps:
                 status.merger.target_timestamps = target_timestamps
-            status.merger.merge_all(sample_count=limit, target_date=target_date)
+                
+            final_output_file = status.merger.merge_all(sample_count=limit, target_date=target_date)
+            
+            # Record Success to History
+            if final_output_file and os.path.exists(final_output_file):
+                f_size = os.path.getsize(final_output_file)
+                size_str = f"{f_size / (1024*1024):.1f} MB"
+                if status.history_mgr:
+                    status.history_mgr.add_record(source, final_output_file, target_date, size_str)
+            
             progress_callback(f"COMPLETED:Successfully processed clips. Saved to {output}")
         except Exception as e:
             progress_callback(f"Error: {str(e)}")
         finally:
             status.is_running = False
 
-    # 使用线程运行以避免阻塞 FastAPI
     thread = threading.Thread(target=run_merger, args=(req.source_path, req.output_path, req.sample_limit, req.target_date, req.target_timestamps))
     thread.start()
     
@@ -98,8 +155,22 @@ async def get_status():
     return {
         "is_running": status.is_running,
         "progress": status.progress,
-        "logs": status.logs[-20:] # 只返回最后20条
+        "logs": status.logs[-20:]
     }
+
+# --- History APIs ---
+@app.get("/api/history")
+async def get_history():
+    if status.history_mgr:
+        return {"status": "success", "history": status.history_mgr.history}
+    return {"status": "error", "history": []}
+
+@app.delete("/api/history")
+async def clear_history():
+    if status.history_mgr:
+        status.history_mgr.clear_history()
+        return {"status": "success", "message": "History cleared"}
+    return {"status": "error"}
 
 @app.get("/api/videos")
 async def get_videos(date: str, path: str):

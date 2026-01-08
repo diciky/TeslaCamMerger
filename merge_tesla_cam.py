@@ -214,6 +214,7 @@ class TeslaCamMerger:
         
         self.log(f"Starting processing {total_timestamps} clips across {len(grouped_days)} days...")
 
+        last_successful_output = None
         for date_str, timestamps in sorted(grouped_days.items()):
             if self.stop_requested: break
             
@@ -290,10 +291,12 @@ class TeslaCamMerger:
                         if os.path.exists(temp_file): os.remove(temp_file)
                     if os.path.exists(concat_list_path): os.remove(concat_list_path)
                     self.log(f"Successfully created {final_output}")
+                    last_successful_output = final_output
                 else:
                     self.log(f"Failed to merge {date_str}: {result.stderr}")
 
         self.log("COMPLETED:Processing finished.")
+        return last_successful_output
 
     def stop(self):
         self.stop_requested = True

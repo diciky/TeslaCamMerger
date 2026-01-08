@@ -447,7 +447,8 @@ body {
 .bottom-actions {
     margin-top: auto;
     display: flex;
-    justify-content: flex-start; /* 改为左对齐防止被右侧日志窗遮挡 */
+    justify-content: flex-start;
+    /* 改为左对齐防止被右侧日志窗遮挡 */
     padding-left: 10px;
     gap: 20px;
 }
@@ -485,6 +486,12 @@ body {
 .tesla-btn.secondary:hover:not(:disabled) {
     background: var(--tesla-red);
     color: white;
+}
+
+.tesla-btn.small {
+    padding: 8px 20px;
+    font-size: 0.85rem;
+    box-shadow: none;
 }
 
 /* Log Window */

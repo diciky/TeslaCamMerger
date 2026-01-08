@@ -40,21 +40,14 @@
                 </svg>
             </div>
             <nav class="nav-menu">
-                <div class="nav-item active" id="nav-browser">
+                <div class="nav-item active sidebar-item" onclick="switchView('browser')">
                     <div class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"></path>
                         </svg></div>
                     <span>文件浏览器</span>
                 </div>
-                <div class="nav-item" onclick="openPicker('source-path')">
-                    <div class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path
-                                d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
-                            </path>
-                        </svg></div>
-                    <span>合并设置</span>
-                </div>
-                <div class="nav-item" onclick="alert('历史功能正在开发中...')">
+                <!-- Settings Item Skipped -->
+                <div class="nav-item sidebar-item" onclick="switchView('history')">
                     <div class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="10"></circle>
                             <polyline points="12 6 12 12 16 14"></polyline>
@@ -110,88 +103,107 @@
             </header>
 
             <div class="content-area">
-                <div class="glass-container">
-                    <div class="panel-header">
-                        <span class="active-tab">TeslaCam 资源预览</span>
-                        <div class="panel-meta">
-                            <label><input type="checkbox" id="setting-auto-merge"> 自动重连</label>
+                <div id="browser-view" class="content-panel" style="display: flex;">
+                    <div class="glass-container">
+                        <div class="panel-header">
+                            <span class="active-tab">TeslaCam 资源预览</span>
+                            <div class="panel-meta" style="display: flex; gap: 10px;">
+                                <button id="start-btn" class="tesla-btn small">开始合并</button>
+                                <button id="stop-btn" class="tesla-btn secondary small" disabled>停止</button>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="path-display-bar">
-                        <div class="path-chip" onclick="openPicker('source-path')">
-                            <small>源路径:</small> <span id="source-path-label">/Volumes/TESLADRIVE/TeslaCam</span>
-                        </div>
-                        <div class="path-chip" onclick="openPicker('output-path')">
-                            <small>输出路径:</small> <span id="output-path-label">/Volumes/TESLADRIVE/TeslaCam</span>
-                        </div>
-                        <div class="path-chip">
-                            <small>目标日期:</small>
-                            <div class="tesla-datepicker" id="tesla-datepicker">
-                                <div class="datepicker-value" onclick="toggleCalendar()">全部日期</div>
-                                <div class="datepicker-calendar" id="datepicker-calendar">
-                                    <div class="calendar-header">
-                                        <button onclick="changeMonth(-1); event.stopPropagation()">&lt;</button>
-                                        <span id="calendar-month-year">2023年12月</span>
-                                        <button onclick="changeMonth(1); event.stopPropagation()">&gt;</button>
+                        <div class="path-display-bar">
+                            <div class="path-chip" onclick="openPicker('source-path')">
+                                <small>源路径:</small> <span id="source-path-label">/Volumes/TESLADRIVE/TeslaCam</span>
+                            </div>
+                            <div class="path-chip" onclick="openPicker('output-path')">
+                                <small>输出路径:</small> <span id="output-path-label">/Volumes/TESLADRIVE/TeslaCam</span>
+                            </div>
+                            <div class="path-chip">
+                                <small>目标日期:</small>
+                                <div class="tesla-datepicker" id="tesla-datepicker">
+                                    <div class="datepicker-value" onclick="toggleCalendar()">全部日期</div>
+                                    <div class="datepicker-calendar" id="datepicker-calendar">
+                                        <div class="calendar-header">
+                                            <button onclick="changeMonth(-1); event.stopPropagation()">&lt;</button>
+                                            <span id="calendar-month-year">2023年12月</span>
+                                            <button onclick="changeMonth(1); event.stopPropagation()">&gt;</button>
+                                        </div>
+                                        <div class="calendar-weekdays">
+                                            <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+                                        </div>
+                                        <div class="calendar-days" id="calendar-days"></div>
                                     </div>
-                                    <div class="calendar-weekdays">
-                                        <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
-                                    </div>
-                                    <div class="calendar-days" id="calendar-days"></div>
                                 </div>
                             </div>
+                            <input type="hidden" id="selected-date" value="">
+                            <input type="hidden" id="source-path" value="/Volumes/TESLADRIVE/TeslaCam">
+                            <input type="hidden" id="output-path" value="/Volumes/TESLADRIVE/TeslaCam">
                         </div>
-                        <input type="hidden" id="selected-date" value="">
-                        <input type="hidden" id="source-path" value="/Volumes/TESLADRIVE/TeslaCam">
-                        <input type="hidden" id="output-path" value="/Volumes/TESLADRIVE/TeslaCam">
-                    </div>
 
-                    <div class="video-grid" id="video-grid">
-                        <div class="placeholder-msg">正在扫描源目录以预览视频...</div>
-                    </div>
+                        <div class="video-grid" id="video-grid">
+                            <div class="placeholder-msg">正在扫描源目录以预览视频...</div>
+                        </div>
 
-                    <!-- 视频选择与详细列表 (NEW) -->
-                    <div id="video-selection-area" class="video-selection-area" style="display: none;">
-                        <div class="selection-header">
-                            <span class="selection-title"><span id="selection-date-label"></span> 视频分片 (共 <span
-                                    id="total-clips-count">0</span> 个)</span>
-                            <div class="selection-controls">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="select-all-checkbox" checked
-                                        onchange="toggleSelectAll()"> 全选
-                                </label>
+                        <!-- 视频选择与详细列表 (NEW) -->
+                        <div id="video-selection-area" class="video-selection-area" style="display: none;">
+                            <div class="selection-header">
+                                <span class="selection-title"><span id="selection-date-label"></span> 视频分片 (共 <span
+                                        id="total-clips-count">0</span> 个)</span>
+                                <div class="selection-controls">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="select-all-checkbox" checked
+                                            onchange="toggleSelectAll()"> 全选
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="video-list-container" id="video-list-container">
+                                <!-- 动态生成视频列表 -->
                             </div>
                         </div>
-                        <div class="video-list-container" id="video-list-container">
-                            <!-- 动态生成视频列表 -->
+
+                        <!-- Floating Progress Card -->
+                        <div id="progress-container" class="floating-card progress-card" style="display: none;">
+                            <div class="card-header">
+                                <span class="card-title">视频处理中...</span>
+                                <span id="progress-percent" class="card-value">0%</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div id="progress-bar" class="progress-bar-fill"></div>
+                            </div>
+                            <!-- 详细子任务区域 -->
+                            <div id="sub-tasks-header" class="sub-tasks-header" onclick="toggleSubTasks()">
+                                <span>详细任务状态</span>
+                                <i id="toggle-icon" class="fas fa-chevron-down"></i>
+                            </div>
+                            <div id="sub-tasks-list" class="sub-tasks-list">
+                                <!-- 动态生成的子任务进度将显示在这里 -->
+                            </div>
+                            <div id="progress-detail" class="card-footer">准备处理任务...</div>
+                        </div>
+
+                        <div class="bottom-actions" style="display: none;">
+                            <!-- Buttons moved to top -->
                         </div>
                     </div>
+                </div>
+            </div> <!-- End browser-view -->
 
-                    <!-- Floating Progress Card -->
-                    <div id="progress-container" class="floating-card progress-card" style="display: none;">
-                        <div class="card-header">
-                            <span class="card-title">视频处理中...</span>
-                            <span id="progress-percent" class="card-value">0%</span>
+            <!-- History View -->
+            <div id="history-view" class="content-panel" style="display: none;">
+                <div class="glass-container full-height">
+                    <div class="panel-header">
+                        <span class="active-tab">历史记录</span>
+                        <div class="panel-meta">
+                            <button onclick="refreshHistory()" class="tesla-btn secondary small">刷新</button>
+                            <button onclick="clearHistory()" class="tesla-btn secondary small"
+                                style="margin-left: 10px;">清空</button>
                         </div>
-                        <div class="progress-bar-container">
-                            <div id="progress-bar" class="progress-bar-fill"></div>
-                        </div>
-                        <!-- 详细子任务区域 -->
-                        <div id="sub-tasks-header" class="sub-tasks-header" onclick="toggleSubTasks()">
-                            <span>详细任务状态</span>
-                            <i id="toggle-icon" class="fas fa-chevron-down"></i>
-                        </div>
-                        <div id="sub-tasks-list" class="sub-tasks-list">
-                            <!-- 动态生成的子任务进度将显示在这里 -->
-                        </div>
-                        <div id="progress-detail" class="card-footer">准备处理任务...</div>
                     </div>
-
-                    <div class="bottom-actions">
-                        <!-- 移除少量文件测试开关 -->
-                        <button id="start-btn" class="tesla-btn">开始合并</button>
-                        <button id="stop-btn" class="tesla-btn secondary" disabled>停止</button>
+                    <div class="history-list" id="history-list">
+                        <!-- History items will be injected here -->
+                        <div class="empty-state">加载中...</div>
                     </div>
                 </div>
             </div>
@@ -768,7 +780,75 @@
         updateDateList(sourceInput.value);
         // Init Output Label
         document.getElementById('output-path-label').textContent = outputInput.value;
-        // --- Log Window Draggable Logic ---
+        // --- History Logic ---
+        function switchView(viewName) {
+            const browserView = document.getElementById('browser-view');
+            const historyView = document.getElementById('history-view');
+            const sidebarItems = document.querySelectorAll('.sidebar-item');
+
+            if (viewName === 'browser') {
+                browserView.style.display = 'flex';
+                historyView.style.display = 'none';
+                sidebarItems[0].classList.add('active');
+                sidebarItems[1].classList.remove('active');
+            } else {
+                browserView.style.display = 'none';
+                historyView.style.display = 'flex';
+                sidebarItems[0].classList.remove('active');
+                sidebarItems[1].classList.add('active');
+                refreshHistory();
+            }
+        }
+
+        async function refreshHistory() {
+            const listEl = document.getElementById('history-list');
+            listEl.innerHTML = '<div class="empty-state">加载中...</div>';
+
+            try {
+                const res = await fetch('/api/history');
+                const data = await res.json();
+                if (data.status === 'success') {
+                    renderHistory(data.history);
+                } else {
+                    listEl.innerHTML = '<div class="empty-state">加载失败</div>';
+                }
+            } catch (e) {
+                listEl.innerHTML = `<div class="empty-state">Error: ${e}</div>`;
+            }
+        }
+
+        function renderHistory(items) {
+            const listEl = document.getElementById('history-list');
+            if (!items || items.length === 0) {
+                listEl.innerHTML = '<div class="empty-state">暂无历史记录</div>';
+                return;
+            }
+
+            let html = '';
+            items.forEach(item => {
+                html += `
+                    <div class="history-item">
+                        <div class="history-info">
+                            <div class="history-time">${item.timestamp}</div>
+                            <div class="history-path" title="${item.output_path}">
+                                ${item.target_date} - ${item.file_size} <br>
+                                <small>${item.output_path}</small>
+                            </div>
+                        </div>
+                        <div class="history-actions">
+                            <button class="tesla-btn small" onclick="playVideo('${item.output_path.replace(/\\/g, '\\\\')}')">▶ 播放</button>
+                        </div>
+                    </div>
+                `;
+            });
+            listEl.innerHTML = html;
+        }
+
+        async function clearHistory() {
+            if (!confirm('确定要清空所有历史记录吗？')) return;
+            await fetch('/api/history', { method: 'DELETE' });
+            refreshHistory();
+        }
         (function initLogDraggable() {
             const logWindow = document.querySelector('.log-window');
             const logHeader = document.querySelector('.log-header');
