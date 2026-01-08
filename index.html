@@ -122,6 +122,9 @@
                         <div class="path-chip" onclick="openPicker('source-path')">
                             <small>源路径:</small> <span id="source-path-label">/Volumes/TESLADRIVE/TeslaCam</span>
                         </div>
+                        <div class="path-chip" onclick="openPicker('output-path')">
+                            <small>输出路径:</small> <span id="output-path-label">/Volumes/TESLADRIVE/TeslaCam</span>
+                        </div>
                         <div class="path-chip">
                             <small>目标日期:</small>
                             <div class="tesla-datepicker" id="tesla-datepicker">
@@ -141,7 +144,7 @@
                         </div>
                         <input type="hidden" id="selected-date" value="">
                         <input type="hidden" id="source-path" value="/Volumes/TESLADRIVE/TeslaCam">
-                        <input type="hidden" id="output-path" value="/Users/diciky/cam">
+                        <input type="hidden" id="output-path" value="/Volumes/TESLADRIVE/TeslaCam">
                     </div>
 
                     <div class="video-grid" id="video-grid">
@@ -763,6 +766,8 @@
         checkStatus();
         fetchPreview();
         updateDateList(sourceInput.value);
+        // Init Output Label
+        document.getElementById('output-path-label').textContent = outputInput.value;
         // --- Log Window Draggable Logic ---
         (function initLogDraggable() {
             const logWindow = document.querySelector('.log-window');

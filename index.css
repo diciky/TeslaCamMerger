@@ -447,7 +447,8 @@ body {
 .bottom-actions {
     margin-top: auto;
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start; /* 改为左对齐防止被右侧日志窗遮挡 */
+    padding-left: 10px;
     gap: 20px;
 }
 
