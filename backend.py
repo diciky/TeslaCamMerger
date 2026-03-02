@@ -319,7 +319,9 @@ async def get_disk_usage():
             try:
                 for d in os.listdir(volumes_dir):
                     p = os.path.join(volumes_dir, d)
-                    if os.path.isdir(p) and not d.startsWith("."):
+                    # 只有实际挂载的目录才加入，排除隐藏文件和系统链接
+                    if os.path.isdir(p) and not d.startswith("."):
+                        # 确保是一个挂载点或者普通的目录（U盘通常直接在 /Volumes 下）
                         paths_to_check.append(p)
             except: pass
     else:

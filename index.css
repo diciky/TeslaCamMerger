@@ -40,13 +40,32 @@ body {
 /* 侧边栏 (Sidebar) - 可调整宽度 */
 .sidebar {
     width: 240px;
-    /* 如果觉得侧边栏太宽或太窄，可修改这里 */
     background: var(--sidebar-bg);
     border-right: 1px solid var(--glass-border);
     display: flex;
     flex-direction: column;
     padding: 20px 0;
     z-index: 10;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* 侧边栏滚动条美化 */
+.sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: var(--neon-blue);
 }
 
 .tesla-logo {
@@ -98,6 +117,10 @@ body {
     align-items: center;
     gap: 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: auto;
+    /* 确保在内容少时居底，多时随之滚动 */
+    flex-shrink: 0;
+    /* 防止在滚动容器中被压缩 */
 }
 
 .system-stats-container {
