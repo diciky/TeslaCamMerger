@@ -65,7 +65,10 @@ python3 -m PyInstaller --noconfirm --windowed --name "$APP_NAME" \
     "$MAIN_SCRIPT"
 
 echo "Build complete."
+ls -lh dist/
 if [ -d "dist/$APP_NAME.app" ]; then
+    echo "App bundle size:"
+    du -sh "dist/$APP_NAME.app"
     echo "Executable created at: $(pwd)/dist/$APP_NAME.app"
     # 清除检疫标记以防止“损坏”报错
     echo "Clearing quarantine attributes..."
@@ -85,6 +88,10 @@ if [ -d "dist/$APP_NAME.app" ]; then
     # 创建指向 /Applications 的软链接
     ln -s /Applications "$STAGING_DIR/Applications"
     
+    echo "Staging directory contents:"
+    ls -R "$STAGING_DIR"
+    du -sh "$STAGING_DIR"
+
     # 使用 hdiutil 从暂存区创建 DMG
     hdiutil create -volname "$APP_NAME" -srcfolder "$STAGING_DIR" -ov -format UDZO "dist/$DMG_NAME"
     
