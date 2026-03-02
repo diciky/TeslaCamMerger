@@ -1,6 +1,11 @@
-fastapi
-uvicorn
-sse-starlette
-pywebview
-pyinstaller
-Pillow
+# Core dependencies
+fastapi>=0.100.0
+uvicorn>=0.22.0
+sse-starlette>=1.6.0
+pywebview>=4.0.0
+pyinstaller>=5.0.0
+Pillow>=9.0.0
+
+# Cloud storage (for cloud backend)
+boto3>=1.28.0
+python-dotenv>=1.0.0
