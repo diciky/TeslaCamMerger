@@ -223,18 +223,66 @@ async def stream_video(path: str, range: str =  None):
     # 或者手动处理。其实 FileResponse 已经支持 Range 了。
     return FileResponse(path, media_type="video/mp4", filename=os.path.basename(path))
 
+@app.post("/api/open_folder")
+async def open_folder(path: str):
+    import platform
+    import subprocess
+    if not os.path.exists(path):
+        return {"status": "error", "message": "路径不存在"}
+    
+    # 如果路径是文件，打开其所在的文件夹
+    folder = path if os.path.isdir(path) else os.path.dirname(path)
+    
+    try:
+        if platform.system() == "Windows":
+            os.startfile(folder)
+        elif platform.system() == "Darwin":
+            subprocess.run(["open", folder])
+        else:
+            subprocess.run(["xdg-open", folder])
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.delete("/api/delete_date")
+async def delete_date(path: str, date: str):
+    import shutil
+    if not os.path.exists(path):
+        return {"status": "error", "message": "源路径不存在"}
+    
+    # 查找属于该日期的所有子文件夹（通常在 TeslaCam/SavedClips, SentryClips 等）
+    # 但由于合并逻辑是按文件夹扫描的，我们这里简单处理：
+    # 如果该日期下有对应的文件夹，则删除。
+    deleted_count = 0
+    try:
+        for root, dirs, files in os.walk(path):
+            for d in dirs:
+                if d.startswith(date):
+                    full_p = os.path.join(root, d)
+                    shutil.rmtree(full_p)
+                    deleted_count += 1
+        return {"status": "success", "message": f"解析并删除了 {deleted_count} 个日期文件夹"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
 @app.get("/api/dates")
 async def get_dates(path: str):
     if not os.path.exists(path):
-        return {"dates": []}
+        return {"dates": [], "merged_dates": []}
     
-    # 获取真正的 TeslaCamMerger 实例进行扫描
     from merge_tesla_cam import TeslaCamMerger
     merger = TeslaCamMerger(path, "", None)
     grouped, _ = merger.group_videos()
     
-    # 返回排序后的日期列表
-    return {"dates": sorted(grouped.keys(), reverse=True)}
+    # 获取历史记录中已经合并成功的日期
+    merged_dates = []
+    if status.history_mgr:
+        merged_dates = [record["target_date"] for record in status.history_mgr.history if record["status"] == "success"]
+    
+    return {
+        "dates": sorted(grouped.keys(), reverse=True),
+        "merged_dates": list(set(merged_dates)) # 去重
+    }
 
 @app.get("/api/sys_stats")
 async def get_sys_stats():

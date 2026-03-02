@@ -178,9 +178,13 @@
                         <!-- 视频选择与详细列表 (NEW) -->
                         <div id="video-selection-area" class="video-selection-area" style="display: none;">
                             <div class="selection-header">
-                                <span class="selection-title"><span id="selection-date-label"></span> 视频分片 (共 <span
-                                        id="total-clips-count">0</span> 个)</span>
+                                <span class="selection-title">
+                                    <span id="selection-date-label"></span> 视频分片 (共 <span
+                                        id="total-clips-count">0</span> 个)
+                                </span>
                                 <div class="selection-controls">
+                                    <button id="delete-date-btn" class="tesla-btn secondary small danger"
+                                        style="margin-right: 15px;" onclick="deleteDateSource()">🗑️ 删除源文件</button>
                                     <label class="checkbox-label">
                                         <input type="checkbox" id="select-all-checkbox" checked
                                             onchange="toggleSelectAll()"> 全选
@@ -318,6 +322,7 @@
         }
 
         let availableDates = [];
+        let mergedDates = [];
         let calendarDate = new Date();
         let selectedDate = "";
 
@@ -330,10 +335,10 @@
                 const resp = await fetch(`/api/dates?path=${encodeURIComponent(path)}`);
                 const data = await resp.json();
                 availableDates = data.dates || [];
+                mergedDates = data.merged_dates || [];
 
                 // 优化：自动跳转到最近的有数据的月份
                 if (availableDates.length > 0) {
-                    // 过滤掉 'temp' 等非日期字符串
                     const validDates = availableDates.filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d));
                     if (validDates.length > 0) {
                         const latestDateStr = validDates.sort().reverse()[0];
@@ -383,6 +388,9 @@
 
                 if (availableDates.includes(dateStr)) {
                     dayEl.classList.add('has-data');
+                }
+                if (mergedDates.includes(dateStr)) {
+                    dayEl.classList.add('merged-date');
                 }
                 if (selectedDate === dateStr) {
                     dayEl.classList.add('active');
@@ -599,7 +607,6 @@
         }
 
         async function updateDiskInfo() {
-            // ... (keeping existing updateDiskInfo but adding sys stats call)
             updateSystemStats();
 
             const container = document.getElementById('disk-info-container');
@@ -657,7 +664,6 @@
             setInterval(updateSystemStats, 5000);
             setInterval(updateDiskInfo, 30000);
 
-            // 现有逻辑
             if (eventSource) eventSource.close();
             eventSource = new EventSource('/api/events');
 
@@ -952,12 +958,40 @@
                             </div>
                         </div>
                         <div class="history-actions">
+                            <button class="tesla-btn small secondary" onclick="openInExplorer('${item.output_path.replace(/\\/g, '\\\\')}')">📂 文件夹</button>
                             <button class="tesla-btn small" onclick="playVideo('${item.output_path.replace(/\\/g, '\\\\')}')">▶ 播放</button>
                         </div>
                     </div>
                 `;
             });
             listEl.innerHTML = html;
+        }
+
+        async function deleteDateSource() {
+            if (!selectedDate) return;
+            if (!confirm(`确定要彻底删除 ${selectedDate} 的所有原始录像吗？此操作不可恢复！`)) return;
+
+            try {
+                const res = await fetch(`/api/delete_date?path=${encodeURIComponent(sourceInput.value)}&date=${selectedDate}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    addLog(data.message, 'success');
+                    updateDateList(sourceInput.value);
+                    selectDate(""); // Reset selection
+                } else {
+                    addLog(data.message, 'error');
+                }
+            } catch (e) { addLog("删除失败: " + e, 'error'); }
+        }
+
+        async function openInExplorer(path) {
+            try {
+                const res = await fetch(`/api/open_folder?path=${encodeURIComponent(path)}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.status !== 'success') {
+                    addLog(data.message, 'error');
+                }
+            } catch (e) { addLog("打开失败: " + e, 'error'); }
         }
 
         async function clearHistory() {
