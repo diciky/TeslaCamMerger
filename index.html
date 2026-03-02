@@ -38,7 +38,7 @@
                     <path transform="scale(0.06) translate(400, -50)"
                         d="m 173.132,80.157 c 36.09,-0.276 77.399,5.583 119.687,24.014 5.652,-10.173 7.105,-14.669 7.105,-14.669 C 253.697,71.213 210.406,64.954 173.127,64.797 135.85,64.954 92.561,71.214 46.34,89.502 c 0,0 2.062,5.538 7.1,14.669 42.28,-18.431 83.596,-24.29 119.687,-24.014 h 0.005" />
                 </svg>
-                <div class="app-version">v0.1.2</div>
+                <div class="app-version">v0.1.3</div>
             </div>
             <nav class="nav-menu">
                 <div class="nav-item active sidebar-item" onclick="switchView('browser')">
@@ -55,12 +55,12 @@
                         </svg></div>
                     <span>历史记录</span>
                 </div>
-                <div class="nav-item sidebar-item" onclick="switchView('account')">
+                <div class="nav-item sidebar-item" onclick="switchView('wemate')">
                     <div class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path>
                             <circle cx="12" cy="7" r="4"></circle>
                         </svg></div>
-                    <span>账户</span>
+                    <span>wemate</span>
                 </div>
             </nav>
             <div class="sidebar-bottom">
@@ -249,22 +249,35 @@
                 </div>
                 <!-- History View Ends -->
 
-                <!-- Account View (External Web) -->
-                <div id="account-view" class="content-panel" style="display: none;">
+                <!-- wemate View (External Web & Login) -->
+                <div id="wemate-view" class="content-panel" style="display: none;">
                     <div class="glass-container full-height-flex">
                         <div class="panel-header">
-                            <span class="active-tab">账户管理 & 外部链接</span>
-                            <div class="panel-meta flex-row gap-10">
-                                <input type="text" id="external-url-input" class="tesla-input"
-                                    placeholder="输入网页地址 (如 http://10.10.10.1:8080)" style="width: 300px;">
-                                <button onclick="saveExternalUrl()" class="tesla-btn small">保存并刷新</button>
+                            <span class="active-tab">wemate 管理控制台</span>
+                            <div id="login-status-badge" class="status-badge connected">已连接</div>
+                        </div>
+                        <div class="wemate-login-panel">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>wemate 地址</label>
+                                    <input type="text" id="wemate-url-input" class="tesla-input"
+                                        placeholder="http://10.10.10.1:8080">
+                                </div>
+                                <div class="form-group">
+                                    <label>登录密码</label>
+                                    <input type="password" id="wemate-pass-input" class="tesla-input"
+                                        placeholder="••••••••">
+                                </div>
+                                <div class="form-actions">
+                                    <button onclick="saveWemateSettings()" class="tesla-btn">保存并登录</button>
+                                </div>
                             </div>
                         </div>
                         <div class="iframe-container">
-                            <iframe id="external-frame" src="about:blank" frameborder="0" allowfullscreen></iframe>
-                            <div id="iframe-placeholder" class="empty-state">
-                                <p>尚未配置外部链接</p>
-                                <small>请在上方输入地址并保存</small>
+                            <iframe id="wemate-frame" src="about:blank" frameborder="0" allowfullscreen></iframe>
+                            <div id="wemate-placeholder" class="empty-state">
+                                <p>尚未连接至 wemate</p>
+                                <small>请在上方输入地址与密码并保存</small>
                             </div>
                         </div>
                     </div>
@@ -695,13 +708,14 @@
             } catch (e) { console.error("Sys stats error", e); }
         }
 
-        function initSSE() {
-            // 每 5 秒更新一次系统状态，30 秒更新一次磁盘
+        function initStats() {
             updateSystemStats();
             updateDiskInfo();
             setInterval(updateSystemStats, 5000);
             setInterval(updateDiskInfo, 30000);
+        }
 
+        function initSSE() {
             if (eventSource) eventSource.close();
             eventSource = new EventSource('/api/events');
 
@@ -937,6 +951,7 @@
         });
 
         checkStatus();
+        initStats();
         fetchPreview();
         updateDateList(sourceInput.value);
         // Init Output Label
@@ -961,42 +976,72 @@
                 historyView.style.display = 'flex';
                 sidebarItems[1].classList.add('active');
                 refreshHistory();
-            } else if (viewName === 'account') {
-                accountView.style.display = 'flex';
+            } else if (viewName === 'wemate') {
+                const wemateView = document.getElementById('wemate-view');
+                if (wemateView) wemateView.style.display = 'flex';
                 sidebarItems[2].classList.add('active');
-                loadExternalUrl();
+                loadWemateSettings();
             }
         }
 
-        function saveExternalUrl() {
-            const url = document.getElementById('external-url-input').value.trim();
+        function saveWemateSettings() {
+            const url = document.getElementById('wemate-url-input').value.trim();
+            const pass = document.getElementById('wemate-pass-input').value.trim();
             if (!url) {
-                alert('请输入有效的 URL 地址');
+                alert('请输入 wemate 地址');
                 return;
             }
 
-            // 简单校验 URL
             let formattedUrl = url;
             if (!url.startsWith('http://') && !url.startsWith('https://')) {
                 formattedUrl = 'http://' + url;
             }
 
-            localStorage.setItem('tesla_external_url', formattedUrl);
-            updateIframe(formattedUrl);
-            addLog(`已保存外部链接: ${formattedUrl}`, 'system');
+            localStorage.setItem('wemate_url', formattedUrl);
+            localStorage.setItem('wemate_pass', pass);
+
+            updateWemateUI(formattedUrl);
+            addLog(`wemate 配置已更新: ${formattedUrl}`, 'success');
+
+            // 模拟登录状态变化
+            const badge = document.getElementById('login-status-badge');
+            badge.textContent = '登录中...';
+            badge.className = 'status-badge processing';
+            setTimeout(() => {
+                badge.textContent = '已连接';
+                badge.className = 'status-badge connected';
+            }, 1500);
         }
 
-        function loadExternalUrl() {
-            const savedUrl = localStorage.getItem('tesla_external_url');
+        function loadWemateSettings() {
+            const savedUrl = localStorage.getItem('wemate_url');
+            const savedPass = localStorage.getItem('wemate_pass');
             if (savedUrl) {
-                document.getElementById('external-url-input').value = savedUrl;
-                updateIframe(savedUrl);
+                document.getElementById('wemate-url-input').value = savedUrl;
+                updateWemateUI(savedUrl);
+            }
+            if (savedPass) {
+                document.getElementById('wemate-pass-input').value = savedPass;
             }
         }
 
-        function updateIframe(url) {
-            const frame = document.getElementById('external-frame');
-            const placeholder = document.getElementById('iframe-placeholder');
+        function updateWemateUI(url) {
+            const frame = document.getElementById('wemate-frame');
+            const placeholder = document.getElementById('wemate-placeholder');
+
+            if (url) {
+                frame.src = url;
+                frame.style.display = 'block';
+                placeholder.style.display = 'none';
+            } else {
+                frame.style.display = 'none';
+                placeholder.style.display = 'block';
+            }
+        }
+
+        function updateWemateUI(url) {
+            const frame = document.getElementById('wemate-frame');
+            const placeholder = document.getElementById('wemate-placeholder');
 
             if (url) {
                 frame.src = url;
