@@ -45,25 +45,16 @@ class HistoryManager:
             os.makedirs(self.data_dir)
         self.history = self.load_history()
 
-@app.get("/api/version")
-async def get_version():
-    return {"version": VERSION}
-
-    def load_history(self) -> List[Dict[str, Any]]:
-        if not os.path.exists(self.history_file):
-            return []
-        try:
-            with open(self.history_file, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except Exception:
-            return []
-
     def save_history(self):
         try:
             with open(self.history_file, 'w', encoding='utf-8') as f:
                 json.dump(self.history, f, indent=2, ensure_ascii=False)
         except Exception as e:
             print(f"Failed to save history: {e}")
+
+@app.get("/api/version")
+async def get_version():
+    return {"version": VERSION}
 
     def add_record(self, source_path, output_path, target_date=None, file_size=0):
         record = {
