@@ -971,13 +971,13 @@
         function switchView(viewName) {
             const browserView = document.getElementById('browser-view');
             const historyView = document.getElementById('history-view');
-            const accountView = document.getElementById('account-view');
+            const wemateView = document.getElementById('wemate-view');
             const sidebarItems = document.querySelectorAll('.sidebar-item');
 
             // Reset all
             browserView.style.display = 'none';
             historyView.style.display = 'none';
-            accountView.style.display = 'none';
+            if (wemateView) wemateView.style.display = 'none';
             sidebarItems.forEach(item => item.classList.remove('active'));
 
             if (viewName === 'browser') {
