@@ -96,8 +96,54 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
+    gap: 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.disk-info-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.disk-item {
+    width: 100%;
+}
+
+.disk-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    margin-bottom: 5px;
+}
+
+.disk-name {
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.disk-free {
+    color: var(--text-muted);
+}
+
+.disk-bar-bg {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.disk-bar-fill {
+    height: 100%;
+    background: var(--neon-blue);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+}
+
+.disk-bar-fill.danger {
+    background: var(--tesla-red);
+    box-shadow: 0 0 10px rgba(232, 33, 39, 0.5);
 }
 
 .wechat-branding {

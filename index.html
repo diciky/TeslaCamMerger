@@ -64,6 +64,9 @@
                 </div>
             </nav>
             <div class="sidebar-bottom">
+                <div id="disk-info-container" class="disk-info-container">
+                    <!-- Disk info will be injected here -->
+                </div>
                 <div class="wechat-branding">
                     <img src="wechat_qr.jpg" alt="WeChat QR" class="wechat-qr">
                     <div class="wechat-title">公众号: nas好好玩</div>
@@ -575,7 +578,40 @@
             }
         }
 
+        async function updateDiskInfo() {
+            const container = document.getElementById('disk-info-container');
+            try {
+                const res = await fetch('/api/disks');
+                const data = await res.json();
+                if (data.status === 'success') {
+                    let html = '';
+                    data.disks.forEach(disk => {
+                        const freeGB = (disk.free / (1024 * 1024 * 1024)).toFixed(1);
+                        html += `
+                            <div class="disk-item">
+                                <div class="disk-meta">
+                                    <span class="disk-name">${disk.name}</span>
+                                    <span class="disk-free">${freeGB} GB 剩余</span>
+                                </div>
+                                <div class="disk-bar-bg">
+                                    <div class="disk-bar-fill ${disk.percent > 90 ? 'danger' : ''}" style="width: ${disk.percent}%"></div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = html;
+                }
+            } catch (e) {
+                console.error("Failed to update disk info", e);
+            }
+        }
+
         function initSSE() {
+            // 每 30 秒更新一次磁盘信息
+            updateDiskInfo();
+            setInterval(updateDiskInfo, 30000);
+
+            // 现有逻辑
             if (eventSource) eventSource.close();
             eventSource = new EventSource('/api/events');
 

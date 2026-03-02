@@ -236,6 +236,48 @@ async def get_dates(path: str):
     # 返回排序后的日期列表
     return {"dates": sorted(grouped.keys(), reverse=True)}
 
+@app.get("/api/disks")
+async def get_disk_usage():
+    import shutil
+    import platform
+
+    disks = []
+    
+    # 始终包含根目录
+    paths_to_check = ["/"]
+    
+    # macOS/Linux 检查 /Volumes
+    if platform.system() != "Windows":
+        volumes_dir = "/Volumes"
+        if os.path.exists(volumes_dir):
+            try:
+                for d in os.listdir(volumes_dir):
+                    p = os.path.join(volumes_dir, d)
+                    if os.path.isdir(p) and not d.startsWith("."):
+                        paths_to_check.append(p)
+            except: pass
+    else:
+        # Windows 简单处理常见盘符
+        for letter in "CDEFG":
+            p = f"{letter}:\\"
+            if os.path.exists(p):
+                paths_to_check.append(p)
+
+    for p in paths_to_check:
+        try:
+            usage = shutil.disk_usage(p)
+            disks.append({
+                "path": p,
+                "name": os.path.basename(p) or p,
+                "total": usage.total,
+                "used": usage.used,
+                "free": usage.free,
+                "percent": round((usage.used / usage.total) * 100, 1)
+            })
+        except: pass
+        
+    return {"status": "success", "disks": disks}
+
 @app.get("/api/ls")
 async def list_dirs(path: str = Query("/", description="要遍历的路径")):
     try:
