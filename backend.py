@@ -43,6 +43,8 @@ class HistoryManager:
         self.history_file = os.path.join(self.data_dir, "history.json")
         if not os.path.exists(self.data_dir):
             os.makedirs(self.data_dir)
+        self.history = self.load_history()
+
     def load_history(self) -> List[Dict[str, Any]]:
         if not os.path.exists(self.history_file):
             return []
