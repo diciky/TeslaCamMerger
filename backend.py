@@ -336,6 +336,14 @@ async def read_css():
     from fastapi.responses import FileResponse
     return FileResponse(resource_path("index.css"))
 
+@app.get("/wechat_qr.jpg")
+async def read_qr():
+    from fastapi.responses import FileResponse
+    qr_path = resource_path("wechat_qr.jpg")
+    if os.path.exists(qr_path):
+        return FileResponse(qr_path)
+    return JSONResponse({"status": "error", "message": "QR code not found"}, status_code=404)
+
 if __name__ == "__main__":
     import uvicorn
     import webview
