@@ -120,6 +120,8 @@ async def start_task(req: StartRequest, background_tasks: BackgroundTasks):
     
     def run_merger(source, output, limit, target_date, target_timestamps):
         try:
+            # 发送初始进度，确保 SSE 建立后立刻有反馈
+            progress_callback("PROGRESS:1%:正在初始化合并引擎...")
             status.merger = TeslaCamMerger(source, output, progress_callback)
             if target_timestamps:
                 status.merger.target_timestamps = target_timestamps
@@ -292,16 +294,21 @@ async def sse_events(request: Request):
     async def event_generator():
         queue = asyncio.Queue()
         status.queues.append(queue)
+        
+        # 先把最近的 50 条日志补发给新连接，防止还没连上 SSE 之前的日志丢掉
+        # 过滤掉之前的 PROGRESS 消息，以免进度条跳动，只补发普通文本日志
+        for old_log in status.logs[-50:]:
+            if not old_log.startswith("PROGRESS:"):
+                yield {"data": old_log}
+        
         try:
             while True:
                 if await request.is_disconnected():
                     break
-                # 从本连接的队列中获取日志并推送
                 try:
                     msg = await asyncio.wait_for(queue.get(), timeout=1.0)
                     yield {"data": msg}
                 except asyncio.TimeoutError:
-                    # 保持连接
                     yield {"comment": "heartbeat"}
         finally:
             if queue in status.queues:

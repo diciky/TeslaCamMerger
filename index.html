@@ -66,7 +66,7 @@
             <div class="sidebar-bottom">
                 <div class="wechat-branding">
                     <img src="wechat_qr.jpg" alt="WeChat QR" class="wechat-qr">
-                    <div class="wechat-title">公众号:nas好好玩</div>
+                    <div class="wechat-title">公众号: nas好好玩</div>
                     <div class="wechat-id">WeChat: nashaohaowan</div>
                 </div>
                 <div class="logo-t">
@@ -603,8 +603,9 @@
                         subTasksList.innerHTML = '<div class="sub-task-item empty">等待新任务...</div>';
                     }
 
-                    if (mainStatus.includes("完成") || mainStatus.includes("失败") || mainStatus.includes("成功")) {
-                        addLog(mainStatus, mainStatus.includes("失败") ? "error" : "success");
+                    // 如果进度中有明确的状态变化，记入 Log Console
+                    if (mainStatus.includes("完成") || mainStatus.includes("失败") || mainStatus.includes("成功") || mainStatus.includes("正在")) {
+                        addLog(mainStatus, mainStatus.includes("失败") ? "error" : (mainStatus.includes("完成") ? "success" : "system"));
                     }
                 } else if (msg.startsWith("COMPLETED:")) {
                     addLog(msg, 'success');
