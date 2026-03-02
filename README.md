@@ -1,4 +1,6 @@
-# TeslaCam Merger 🚗🎥
+# TeslaCam Merger (特斯拉行车记录仪视频合并器)
+
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 [![Build Multi-Platform Apps](https://github.com/diciky/TeslaCamMerger/actions/workflows/build.yml/badge.svg)](https://github.com/diciky/TeslaCamMerger/actions/workflows/build.yml)
 
@@ -69,9 +71,13 @@ build_app_win.bat
 
 本项目集成了强大的 CI/CD 流程。只需将代码推送到 `main` 分支，GitHub 就会自动启动 macOS 和 Windows 的并发构建，并生成可下载的 Artifacts。
 
-## 📝 许可证
+## 📝 许可证 (License)
 
-MIT License. 仅供学习与个人使用。
+本项目采用 **[CC BY-NC-SA 4.0 (署名-非商业性使用-相同方式共享 4.0 国际)](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh)** 协议开源。
+
+- **非商业性使用**：您不得将本项目及其衍生版本用于任何形式的商业目的（包括但不限于销售软件、封装为付费服务等）。
+- **署名**：在分发或修改本项目时，必须保留原作者信息。
+- **相同方式共享**：如果您对代码进行了修改或二次开发，则必须以同样的协议开源。
 
 ---
 *Inspired by Tesla. Built for Tesla Owners.*
