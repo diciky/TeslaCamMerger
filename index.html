@@ -38,7 +38,7 @@
                     <path transform="scale(0.06) translate(400, -50)"
                         d="m 173.132,80.157 c 36.09,-0.276 77.399,5.583 119.687,24.014 5.652,-10.173 7.105,-14.669 7.105,-14.669 C 253.697,71.213 210.406,64.954 173.127,64.797 135.85,64.954 92.561,71.214 46.34,89.502 c 0,0 2.062,5.538 7.1,14.669 42.28,-18.431 83.596,-24.29 119.687,-24.014 h 0.005" />
                 </svg>
-                <div class="app-version">v0.1.3</div>
+                <div id="app-version-display" class="app-version">Loading...</div>
             </div>
             <nav class="nav-menu">
                 <div class="nav-item active sidebar-item" onclick="switchView('browser')">
@@ -950,7 +950,18 @@
             }
         });
 
+        async function updateAppVersion() {
+            try {
+                const res = await fetch('/api/version');
+                const data = await res.json();
+                document.getElementById('app-version-display').textContent = data.version;
+            } catch (e) {
+                document.getElementById('app-version-display').textContent = 'v0.1.3';
+            }
+        }
+
         checkStatus();
+        updateAppVersion();
         initStats();
         fetchPreview();
         updateDateList(sourceInput.value);

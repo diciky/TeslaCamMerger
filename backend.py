@@ -8,6 +8,7 @@ from sse_starlette.sse import EventSourceResponse
 from merge_tesla_cam import TeslaCamMerger
 
 app = FastAPI()
+VERSION = "v0.1.3"
 
 # 允许跨域
 app.add_middleware(
@@ -43,6 +44,10 @@ class HistoryManager:
         if not os.path.exists(self.data_dir):
             os.makedirs(self.data_dir)
         self.history = self.load_history()
+
+@app.get("/api/version")
+async def get_version():
+    return {"version": VERSION}
 
     def load_history(self) -> List[Dict[str, Any]]:
         if not os.path.exists(self.history_file):
