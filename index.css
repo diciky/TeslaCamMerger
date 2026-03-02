@@ -102,10 +102,30 @@ body {
 
 .wechat-branding {
     text-align: center;
-    padding: 10px;
+    padding: 12px;
     background: rgba(255, 255, 255, 0.03);
-    border-radius: 8px;
+    border-radius: 12px;
     width: 100%;
+    transition: all 0.3s ease;
+}
+
+.wechat-branding:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateY(-2px);
+}
+
+.wechat-qr {
+    width: 80px;
+    height: 80px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    filter: brightness(0.9);
+    transition: all 0.3s ease;
+}
+
+.wechat-branding:hover .wechat-qr {
+    filter: brightness(1);
+    transform: scale(1.05);
 }
 
 .wechat-title {

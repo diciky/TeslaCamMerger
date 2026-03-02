@@ -58,6 +58,7 @@ python3 -m PyInstaller --noconfirm --windowed --name "$APP_NAME" \
     --icon "icon.icns" \
     --add-data "index.html:." \
     --add-data "index.css:." \
+    --add-data "wechat_qr.jpg:." \
     --add-binary "$FFMPEG_BIN:." \
     --add-binary "$FFPROBE_BIN:." \
     --hidden-import "uvicorn" \
