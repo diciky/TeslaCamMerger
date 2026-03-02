@@ -84,6 +84,7 @@ async def startup_event():
     status.history_mgr = HistoryManager()
 
 def progress_callback(message):
+    print(f"[CALLBACK] {message}", flush=True) # 增加终端打印，方便调试
     if status.loop:
         for q in status.queues:
             status.loop.call_soon_threadsafe(q.put_nowait, message)

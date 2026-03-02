@@ -89,14 +89,22 @@ if [ -d "dist/$APP_NAME.app" ]; then
     hdiutil create -volname "$APP_NAME" -srcfolder "$STAGING_DIR" -ov -format UDZO "dist/$DMG_NAME"
     
     if [ -f "dist/$DMG_NAME" ]; then
-        echo "DMG created at: $(pwd)/dist/$DMG_NAME"
+        # 增加大小校验：如果小于 5MB，说明打包失败（正常应该 40MB+）
+        FILESIZE=$(stat -f%z "dist/$DMG_NAME")
+        if [ "$FILESIZE" -lt 5000000 ]; then
+            echo "Error: DMG file is too small ($FILESIZE bytes). Something went wrong."
+            exit 1
+        fi
+        echo "DMG created at: $(pwd)/dist/$DMG_NAME ($((FILESIZE/1024/1024)) MB)"
         # 清理冗余的中间件
         echo "Cleaning up intermediate build folders..."
         rm -rf "dist/$APP_NAME"
         rm -rf "$STAGING_DIR"
     else
         echo "DMG creation failed."
+        exit 1
     fi
 else
     echo "Build failed."
+    exit 1
 fi

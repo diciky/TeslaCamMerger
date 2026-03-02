@@ -302,6 +302,18 @@
                 const resp = await fetch(`/api/dates?path=${encodeURIComponent(path)}`);
                 const data = await resp.json();
                 availableDates = data.dates || [];
+
+                // 优化：自动跳转到最近的有数据的月份
+                if (availableDates.length > 0) {
+                    // 过滤掉 'temp' 等非日期字符串
+                    const validDates = availableDates.filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d));
+                    if (validDates.length > 0) {
+                        const latestDateStr = validDates.sort().reverse()[0];
+                        const [y, m, d] = latestDateStr.split('-').map(Number);
+                        calendarDate = new Date(y, m - 1, 1);
+                    }
+                }
+
                 renderCalendar();
             } catch (e) {
                 console.error("加载日期失败:", e);
@@ -536,6 +548,9 @@
                 if (data.status === 'success') {
                     stopBtn.disabled = false;
                     progressContainer.style.display = 'block';
+                    progressBar.style.width = '2%'; // 给个 2% 的初始进度
+                    progressPercent.textContent = '2%';
+                    progressDetail.textContent = '任务已下发，正在初始化...';
                     initSSE();
                 } else {
                     addLog(data.message, 'error');
@@ -583,8 +598,8 @@
                         subTasksList.innerHTML = '<div class="sub-task-item empty">等待新任务...</div>';
                     }
 
-                    if (mainStatus.includes("完成") || mainStatus.includes("失败")) {
-                        addLog(msg);
+                    if (mainStatus.includes("完成") || mainStatus.includes("失败") || mainStatus.includes("成功")) {
+                        addLog(mainStatus, mainStatus.includes("失败") ? "error" : "success");
                     }
                 } else if (msg.startsWith("COMPLETED:")) {
                     addLog(msg, 'success');
@@ -689,13 +704,14 @@
         function confirmPicker() {
             const val = currentPath;
             document.getElementById(currentTargetId).value = val;
-            const labelEl = document.getElementById(currentTargetId + '-label');
-            if (labelEl) labelEl.textContent = val;
             if (currentTargetId === 'source-path') {
+                document.getElementById('source-path-label').textContent = val;
                 updateDateList(val);
+                fetchPreview();
+            } else {
+                document.getElementById('output-path-label').textContent = val;
             }
             closePicker();
-            fetchPreview();
         }
 
         async function loadFolders(path) {
