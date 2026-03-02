@@ -110,6 +110,13 @@
                     <h1 class="neon-title">特斯拉行车记录仪视频合并</h1>
                 </div>
                 <div class="top-controls">
+                    <div id="header-progress-container" class="header-progress-container" style="display: none;">
+                        <span id="header-progress-msg" class="header-progress-msg">正在初始化...</span>
+                        <div class="header-progress-bar-bg">
+                            <div id="header-progress-bar" class="header-progress-bar-fill"></div>
+                        </div>
+                        <span id="header-progress-percent" class="header-progress-percent">0%</span>
+                    </div>
                     <button class="icon-btn" onclick="addLog('暂无新通知', 'system')"><svg viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2">
                             <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
@@ -303,8 +310,13 @@
         const progressContainer = document.getElementById('progress-container');
         const progressBar = document.getElementById('progress-bar');
         const progressPercent = document.getElementById('progress-percent');
-        const statusTitle = document.getElementById('status-title');
         const progressDetail = document.getElementById('progress-detail');
+
+        // Header progress elements
+        const headerProgressBar = document.getElementById('header-progress-bar');
+        const headerProgressPercent = document.getElementById('header-progress-percent');
+        const headerProgressMsg = document.getElementById('header-progress-msg');
+        const headerProgressContainer = document.getElementById('header-progress-container');
         const logConsole = document.getElementById('log-console');
         const videoGrid = document.getElementById('video-grid');
 
@@ -422,7 +434,7 @@
             // 隐藏通用预览，显示特定日期的视频选择区
             if (date) {
                 document.getElementById('video-grid').style.display = 'none';
-                document.getElementById('video-selection-area').style.display = 'block';
+                document.getElementById('video-selection-area').style.display = 'flex';
                 fetchVideosForDate(date);
             } else {
                 document.getElementById('video-grid').style.display = 'grid';
@@ -584,9 +596,13 @@
                 if (data.status === 'success') {
                     stopBtn.disabled = false;
                     progressContainer.style.display = 'block';
-                    progressBar.style.width = '2%'; // 给个 2% 的初始进度
+                    headerProgressContainer.style.display = 'flex';
+                    progressBar.style.width = '2%';
+                    headerProgressBar.style.width = '2%';
                     progressPercent.textContent = '2%';
+                    headerProgressPercent.textContent = '2%';
                     progressDetail.textContent = '任务已下发，正在初始化...';
+                    headerProgressMsg.textContent = '正在启动...';
                     initSSE();
                 } else {
                     addLog(data.message, 'error');
@@ -676,12 +692,16 @@
                     const detailFull = parts[2] || '';
 
                     progressBar.style.width = percent;
+                    headerProgressBar.style.width = percent;
                     progressPercent.textContent = percent;
+                    headerProgressPercent.textContent = percent;
                     progressContainer.style.display = 'block';
+                    headerProgressContainer.style.display = 'flex';
 
                     const detailParts = detailFull.split(';');
                     const mainStatus = detailParts[0];
                     progressDetail.textContent = mainStatus;
+                    headerProgressMsg.textContent = mainStatus;
 
                     const subTasksList = document.getElementById('sub-tasks-list');
                     if (detailParts.length > 1) {
@@ -699,7 +719,10 @@
                     addLog(msg, 'success');
                     startBtn.disabled = false;
                     stopBtn.disabled = true;
-                    setTimeout(() => { progressContainer.style.display = 'none'; }, 5000);
+                    setTimeout(() => {
+                        progressContainer.style.display = 'none';
+                        headerProgressContainer.style.display = 'none';
+                    }, 5000);
                     eventSource.close();
                     eventSource = null;
                 } else if (msg.includes("Error") || msg.includes("Failed")) {
