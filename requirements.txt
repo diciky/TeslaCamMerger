@@ -9,3 +9,4 @@ Pillow>=9.0.0
 # Cloud storage (for cloud backend)
 boto3>=1.28.0
 python-dotenv>=1.0.0
+psutil>=5.9.0

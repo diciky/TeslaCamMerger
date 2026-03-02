@@ -100,6 +100,45 @@ body {
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.system-stats-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.system-stat-item {
+    width: 100%;
+}
+
+.stat-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    margin-bottom: 5px;
+    color: var(--text-muted);
+}
+
+.stat-bar-bg {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.stat-bar-fill {
+    height: 100%;
+    background: var(--neon-purple);
+    /* CPU/RAM uses purple for distinction */
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.stat-bar-fill.danger {
+    background: var(--tesla-red);
+    box-shadow: 0 0 10px rgba(232, 33, 39, 0.5);
+}
+
 .disk-info-container {
     width: 100%;
     display: flex;

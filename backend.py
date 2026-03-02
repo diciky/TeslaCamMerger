@@ -236,6 +236,24 @@ async def get_dates(path: str):
     # 返回排序后的日期列表
     return {"dates": sorted(grouped.keys(), reverse=True)}
 
+@app.get("/api/sys_stats")
+async def get_sys_stats():
+    import psutil
+    try:
+        cpu = psutil.cpu_percent(interval=None) # Non-blocking
+        ram = psutil.virtual_memory()
+        return {
+            "status": "success",
+            "cpu": cpu,
+            "ram": {
+                "percent": ram.percent,
+                "free_gb": round(ram.available / (1024**3), 1),
+                "total_gb": round(ram.total / (1024**3), 1)
+            }
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
 @app.get("/api/disks")
 async def get_disk_usage():
     import shutil

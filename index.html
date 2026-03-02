@@ -64,6 +64,26 @@
                 </div>
             </nav>
             <div class="sidebar-bottom">
+                <div id="system-stats-container" class="system-stats-container">
+                    <div class="system-stat-item">
+                        <div class="stat-meta">
+                            <span>CPU 使用率</span>
+                            <span id="cpu-value">0%</span>
+                        </div>
+                        <div class="stat-bar-bg">
+                            <div id="cpu-bar" class="stat-bar-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="system-stat-item">
+                        <div class="stat-meta">
+                            <span>内存占用</span>
+                            <span id="ram-value">0.0GB / 0.0GB</span>
+                        </div>
+                        <div class="stat-bar-bg">
+                            <div id="ram-bar" class="stat-bar-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
                 <div id="disk-info-container" class="disk-info-container">
                     <!-- Disk info will be injected here -->
                 </div>
@@ -579,6 +599,9 @@
         }
 
         async function updateDiskInfo() {
+            // ... (keeping existing updateDiskInfo but adding sys stats call)
+            updateSystemStats();
+
             const container = document.getElementById('disk-info-container');
             try {
                 const res = await fetch('/api/disks');
@@ -606,9 +629,32 @@
             }
         }
 
+        async function updateSystemStats() {
+            try {
+                const res = await fetch('/api/sys_stats');
+                const data = await res.json();
+                if (data.status === 'success') {
+                    const cpuBar = document.getElementById('cpu-bar');
+                    const cpuValue = document.getElementById('cpu-value');
+                    const ramBar = document.getElementById('ram-bar');
+                    const ramValue = document.getElementById('ram-value');
+
+                    cpuBar.style.width = data.cpu + '%';
+                    cpuBar.className = 'stat-bar-fill' + (data.cpu > 85 ? ' danger' : '');
+                    cpuValue.textContent = data.cpu + '%';
+
+                    ramBar.style.width = data.ram.percent + '%';
+                    ramBar.className = 'stat-bar-fill' + (data.ram.percent > 90 ? ' danger' : '');
+                    ramValue.textContent = `${(data.ram.total_gb - data.ram.free_gb).toFixed(1)}GB / ${data.ram.total_gb}GB`;
+                }
+            } catch (e) { console.error("Sys stats error", e); }
+        }
+
         function initSSE() {
-            // 每 30 秒更新一次磁盘信息
+            // 每 5 秒更新一次系统状态，30 秒更新一次磁盘
+            updateSystemStats();
             updateDiskInfo();
+            setInterval(updateSystemStats, 5000);
             setInterval(updateDiskInfo, 30000);
 
             // 现有逻辑
