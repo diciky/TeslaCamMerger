@@ -40,6 +40,16 @@ fi
 echo "Cleaning up..."
 rm -rf build dist $APP_NAME.spec
 
+# 检查 icon.icns 是否存在，若不存在则生成
+if [ ! -f "icon.icns" ]; then
+    echo "icon.icns not found, attempting to generate from icon_stable.png..."
+    if [ -f "make_icon.py" ] && [ -f "icon_stable.png" ]; then
+        python3 make_icon.py
+    else
+        echo "Warning: make_icon.py or icon_stable.png missing, build may fail."
+    fi
+fi
+
 # 执行打包
 echo "Building $APP_NAME..."
 
