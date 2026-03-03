@@ -999,6 +999,10 @@
         updateDateList(sourceInput.value);
         // Init Output Label
         document.getElementById('output-path-label').textContent = outputInput.value;
+
+        // Init wemate settings on load
+        loadWemateSettings();
+
         // --- History Logic ---
         function switchView(viewName) {
             const browserView = document.getElementById('browser-view');
@@ -1023,7 +1027,6 @@
                 const wemateView = document.getElementById('wemate-view');
                 if (wemateView) wemateView.style.display = 'flex';
                 sidebarItems[2].classList.add('active');
-                loadWemateSettings();
             }
         }
 
@@ -1059,9 +1062,20 @@
         function loadWemateSettings() {
             const savedUrl = localStorage.getItem('wemate_url');
             const savedPass = localStorage.getItem('wemate_pass');
+            const badge = document.getElementById('login-status-badge');
+
             if (savedUrl) {
                 document.getElementById('wemate-url-input').value = savedUrl;
                 updateWemateUI(savedUrl);
+                if (badge) {
+                    badge.textContent = '已连接';
+                    badge.className = 'status-badge connected';
+                }
+            } else {
+                if (badge) {
+                    badge.textContent = '未连接';
+                    badge.className = 'status-badge';
+                }
             }
             if (savedPass) {
                 document.getElementById('wemate-pass-input').value = savedPass;
@@ -1073,21 +1087,15 @@
             const placeholder = document.getElementById('wemate-placeholder');
 
             if (url) {
-                frame.src = url;
-                frame.style.display = 'block';
-                placeholder.style.display = 'none';
-            } else {
-                frame.style.display = 'none';
-                placeholder.style.display = 'block';
-            }
-        }
+                // 如果已保存密码，尝试自动带入（如果是 wemate 支持的模式）
+                const pass = localStorage.getItem('wemate_pass');
+                let finalUrl = url;
+                // 注意：这里仅作示意，实际 wemate 可能需要特定参数结构，如 ?password=xxx
+                // if (pass && !url.includes('password=')) {
+                //    finalUrl = url + (url.includes('?') ? '&' : '?') + 'password=' + encodeURIComponent(pass);
+                // }
 
-        function updateWemateUI(url) {
-            const frame = document.getElementById('wemate-frame');
-            const placeholder = document.getElementById('wemate-placeholder');
-
-            if (url) {
-                frame.src = url;
+                frame.src = finalUrl;
                 frame.style.display = 'block';
                 placeholder.style.display = 'none';
             } else {
