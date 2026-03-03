@@ -28,6 +28,7 @@ class TaskStatus:
         self.queues = []
         self.loop = None
         self.history_mgr = None
+        self.config_mgr = None
 
 status = TaskStatus()
 
@@ -79,6 +80,31 @@ class HistoryManager:
         self.history = []
         self.save_history()
 
+class ConfigManager:
+    def __init__(self):
+        self.data_dir = os.path.expanduser("~/.teslacam_merger")
+        self.config_file = os.path.join(self.data_dir, "config.json")
+        if not os.path.exists(self.data_dir):
+            os.makedirs(self.data_dir)
+        self.config = self.load_config()
+
+    def load_config(self) -> Dict[str, Any]:
+        if not os.path.exists(self.config_file):
+            return {"wemate_url": "", "wemate_pass": ""}
+        try:
+            with open(self.config_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception:
+            return {"wemate_url": "", "wemate_pass": ""}
+
+    def save_config(self, new_config: Dict[str, Any]):
+        self.config.update(new_config)
+        try:
+            with open(self.config_file, 'w', encoding='utf-8') as f:
+                json.dump(self.config, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"Failed to save config: {e}")
+
 @app.get("/api/version")
 async def get_version():
     return {"version": VERSION}
@@ -87,6 +113,7 @@ async def get_version():
 async def startup_event():
     status.loop = asyncio.get_running_loop()
     status.history_mgr = HistoryManager()
+    status.config_mgr = ConfigManager()
 
 def progress_callback(message):
     print(f"[CALLBACK] {message}", flush=True) # 增加终端打印，方便调试
@@ -178,6 +205,23 @@ async def clear_history():
     if status.history_mgr:
         status.history_mgr.clear_history()
         return {"status": "success", "message": "History cleared"}
+    return {"status": "error"}
+
+@app.get("/api/config")
+async def get_config():
+    if status.config_mgr:
+        return {"status": "success", "config": status.config_mgr.config}
+    return {"status": "error", "config": {}}
+
+@app.post("/api/config")
+async def update_config(req: Request):
+    try:
+        data = await req.json()
+        if status.config_mgr:
+            status.config_mgr.save_config(data)
+            return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
     return {"status": "error"}
 
 @app.get("/api/videos")
