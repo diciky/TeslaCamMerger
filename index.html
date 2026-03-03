@@ -428,6 +428,17 @@
                 daysGrid.appendChild(document.createElement('div'));
             }
 
+            // 本月批量合并选项
+            const monthOpt = document.createElement('div');
+            monthOpt.className = 'calendar-day-item full-width highlight';
+            monthOpt.innerHTML = `<span>🚀 批量合并本月 (${year}-${String(month + 1).padStart(2, '0')})</span>`;
+            monthOpt.onclick = (e) => {
+                e.stopPropagation();
+                const monthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
+                selectDate(monthStr);
+            };
+            daysGrid.appendChild(monthOpt);
+
             for (let d = 1; d <= lastDate; d++) {
                 const dayEl = document.createElement('div');
                 dayEl.className = 'calendar-day-item';
@@ -462,12 +473,16 @@
         function selectDate(date) {
             selectedDate = date;
             document.getElementById('selected-date').value = date;
-            document.querySelector('.datepicker-value').textContent = date || "全部日期";
+
+            let displayLabel = date || "全部日期";
+            if (date.length === 7) displayLabel = `整月: ${date}`;
+
+            document.querySelector('.datepicker-value').textContent = displayLabel;
             document.getElementById('datepicker-calendar').style.display = 'none';
             renderCalendar();
 
             // 隐藏通用预览，显示特定日期的视频选择区
-            if (date) {
+            if (date && date.length > 7) { // 只有具体日期才显示分片选择
                 document.getElementById('video-grid').style.display = 'none';
                 document.getElementById('video-selection-area').style.display = 'flex';
                 fetchVideosForDate(date);
@@ -828,10 +843,17 @@
                     data.files.forEach(f => {
                         const card = document.createElement('div');
                         card.className = 'video-card';
+
+                        // 只有 mp4 且不是临时文件显示播放按钮
+                        const isVideo = f.name.endsWith('.mp4');
+
                         card.innerHTML = `
-                            <div class="video-thumb"><div class="vid-icon">🎬</div></div>
+                            <div class="video-thumb" onclick="${isVideo ? `playVideo('${f.path.replace(/\\/g, '\\\\')}', '${f.name}')` : ''}">
+                                <div class="vid-icon">${isVideo ? '▶' : '🎬'}</div>
+                                ${isVideo ? '<div class="play-overlay">点击播放</div>' : ''}
+                            </div>
                             <div class="video-info">
-                                <span>${f.name.substring(0, 16)}...</span>
+                                <span title="${f.name}">${f.name.substring(0, 16)}...</span>
                                 <span>${f.size}</span>
                             </div>
                         `;

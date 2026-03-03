@@ -1291,6 +1291,19 @@ input:checked+.slider:before {
     background: rgba(255, 255, 255, 0.12);
 }
 
+.calendar-day-item.full-width.highlight {
+    background: rgba(14, 165, 233, 0.2);
+    border: 1px dashed var(--neon-blue);
+    color: var(--neon-blue);
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+.calendar-day-item.full-width.highlight:hover {
+    background: rgba(14, 165, 233, 0.3);
+    transform: scale(1.02);
+}
+
 .calendar-day-item.merged-date {
     border-bottom: 2px solid var(--neon-blue);
     position: relative;
@@ -1451,6 +1464,37 @@ input:checked+.slider:before {
     height: 20px;
     cursor: pointer;
     accent-color: var(--neon-blue);
+}
+
+.video-thumb {
+    position: relative;
+    cursor: pointer;
+}
+
+.play-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.8rem;
+    color: #fff;
+    border-radius: 8px;
+}
+
+.video-thumb:hover .play-overlay {
+    opacity: 1;
+}
+
+.video-thumb:hover .vid-icon {
+    transform: scale(1.2);
+    color: var(--neon-blue);
 }
 
 .video-item-info {

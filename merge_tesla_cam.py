@@ -185,7 +185,15 @@ class TeslaCamMerger:
 
         # 日期过滤逻辑
         if target_date:
-            if target_date in grouped_days:
+            if len(target_date) == 7 and "-" in target_date: # YYYY-MM 格式
+                filtered_days = {d: v for d, v in grouped_days.items() if d.startswith(target_date)}
+                if filtered_days:
+                    self.log(f"FILTER ENABLED: Batch processing month {target_date} ({len(filtered_days)} days)")
+                    grouped_days = filtered_days
+                else:
+                    self.log(f"ERROR: No dates found for month {target_date}")
+                    return
+            elif target_date in grouped_days:
                 self.log(f"FILTER ENABLED: Only processing date {target_date}")
                 grouped_days = {target_date: grouped_days[target_date]}
             else:
