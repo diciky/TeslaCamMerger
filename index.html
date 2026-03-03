@@ -1030,7 +1030,7 @@
             }
         }
 
-        function saveWemateSettings() {
+        async function saveWemateSettings() {
             const url = document.getElementById('wemate-url-input').value.trim();
             const pass = document.getElementById('wemate-pass-input').value.trim();
             if (!url) {
@@ -1043,57 +1043,65 @@
                 formattedUrl = 'http://' + url;
             }
 
-            localStorage.setItem('wemate_url', formattedUrl);
-            localStorage.setItem('wemate_pass', pass);
+            try {
+                const res = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ wemate_url: formattedUrl, wemate_pass: pass })
+                });
+                if (res.ok) {
+                    updateWemateUI(formattedUrl, pass);
+                    addLog(`wemate 配置已永久保存到后端`, 'success');
 
-            updateWemateUI(formattedUrl);
-            addLog(`wemate 配置已更新: ${formattedUrl}`, 'success');
-
-            // 模拟登录状态变化
-            const badge = document.getElementById('login-status-badge');
-            badge.textContent = '登录中...';
-            badge.className = 'status-badge processing';
-            setTimeout(() => {
-                badge.textContent = '已连接';
-                badge.className = 'status-badge connected';
-            }, 1500);
-        }
-
-        function loadWemateSettings() {
-            const savedUrl = localStorage.getItem('wemate_url');
-            const savedPass = localStorage.getItem('wemate_pass');
-            const badge = document.getElementById('login-status-badge');
-
-            if (savedUrl) {
-                document.getElementById('wemate-url-input').value = savedUrl;
-                updateWemateUI(savedUrl);
-                if (badge) {
-                    badge.textContent = '已连接';
+                    const badge = document.getElementById('login-status-badge');
+                    badge.textContent = '已保存';
                     badge.className = 'status-badge connected';
                 }
-            } else {
-                if (badge) {
-                    badge.textContent = '未连接';
-                    badge.className = 'status-badge';
-                }
-            }
-            if (savedPass) {
-                document.getElementById('wemate-pass-input').value = savedPass;
+            } catch (e) {
+                addLog(`保存配置失败: ${e}`, 'error');
             }
         }
 
-        function updateWemateUI(url) {
+        async function loadWemateSettings() {
+            const badge = document.getElementById('login-status-badge');
+            try {
+                const res = await fetch('/api/config');
+                const data = await res.json();
+                if (data.status === 'success' && data.config) {
+                    const cfg = data.config;
+                    if (cfg.wemate_url) {
+                        document.getElementById('wemate-url-input').value = cfg.wemate_url;
+                        updateWemateUI(cfg.wemate_url, cfg.wemate_pass);
+                        if (badge) {
+                            badge.textContent = '已连接';
+                            badge.className = 'status-badge connected';
+                        }
+                    } else {
+                        if (badge) {
+                            badge.textContent = '未连接';
+                            badge.className = 'status-badge';
+                        }
+                    }
+                    if (cfg.wemate_pass) {
+                        document.getElementById('wemate-pass-input').value = cfg.wemate_pass;
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to load config", e);
+            }
+        }
+
+        function updateWemateUI(url, pass) {
             const frame = document.getElementById('wemate-frame');
             const placeholder = document.getElementById('wemate-placeholder');
 
             if (url) {
-                // 如果已保存密码，尝试自动带入（如果是 wemate 支持的模式）
-                const pass = localStorage.getItem('wemate_pass');
                 let finalUrl = url;
-                // 注意：这里仅作示意，实际 wemate 可能需要特定参数结构，如 ?password=xxx
-                // if (pass && !url.includes('password=')) {
-                //    finalUrl = url + (url.includes('?') ? '&' : '?') + 'password=' + encodeURIComponent(pass);
-                // }
+                // 尝试针对常见管理面板自动带入密码参数（猜测常见参数名：password, pass, pwd）
+                if (pass) {
+                    const separator = url.includes('?') ? '&' : '?';
+                    finalUrl = `${url}${separator}password=${encodeURIComponent(pass)}&pass=${encodeURIComponent(pass)}&pwd=${encodeURIComponent(pass)}`;
+                }
 
                 frame.src = finalUrl;
                 frame.style.display = 'block';
