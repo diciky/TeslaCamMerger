@@ -8,7 +8,7 @@ from sse_starlette.sse import EventSourceResponse
 from merge_tesla_cam import TeslaCamMerger
 
 app = FastAPI()
-VERSION = "v0.1.6"
+VERSION = "v0.1.7"
 
 # 允许跨域
 app.add_middleware(

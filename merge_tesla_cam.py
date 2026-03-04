@@ -85,12 +85,21 @@ class TeslaCamMerger:
         
         # Base: Pad the first valid camera to create the canvas
         first_k, first_path, first_x, first_y, first_w, first_h = valid_cams[0]
-        inputs.append(f"-i \"{first_path}\"")
+        
+        # Add hwaccel if on macOS (videotoolbox) or Windows (cuda/nvdec)
+        hw_in = ""
+        if codec == "h264_videotoolbox":
+            hw_in = "-hwaccel videotoolbox "
+        elif codec == "h264_nvenc":
+            # For Nvidia, usually -hwaccel cuda or nvdec works well
+            hw_in = "-hwaccel cuda "
+            
+        inputs.append(f"{hw_in}-i \"{first_path}\"")
         filter_complex += f"[0:v] scale={first_w}:{first_h}, pad={canvas_w}:{canvas_h}:{first_x}:{first_y}:black [base]; "
         
         current_node = "[base]"
         for i, (k, path, x, y, w, h) in enumerate(valid_cams[1:], start=1):
-            inputs.append(f"-i \"{path}\"")
+            inputs.append(f"{hw_in}-i \"{path}\"")
             filter_complex += f"[{i}:v] scale={w}:{h} [v{k}]; "
             filter_complex += f"{current_node}[v{k}] overlay=x={x}:y={y}:eof_action=pass [tmp{i}]; "
             current_node = f"[tmp{i}]"
