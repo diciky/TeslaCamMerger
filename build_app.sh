@@ -55,6 +55,7 @@ echo "Building $APP_NAME..."
 
 # 使用 onedir 模式以确保 .app 结构完整
 python3 -m PyInstaller --noconfirm --windowed --name "$APP_NAME" \
+    --exclude-module "pkg_resources" \
     --icon "icon.icns" \
     --add-data "index.html:." \
     --add-data "index.css:." \
@@ -63,6 +64,8 @@ python3 -m PyInstaller --noconfirm --windowed --name "$APP_NAME" \
     --add-binary "$FFPROBE_BIN:." \
     --hidden-import "uvicorn" \
     --hidden-import "webview" \
+    --hidden-import "appdirs" \
+    --hidden-import "packaging" \
     --hidden-import "uvicorn.logging" \
     --hidden-import "uvicorn.loops" \
     --hidden-import "uvicorn.loops.auto" \

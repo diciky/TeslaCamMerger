@@ -7,6 +7,8 @@ from datetime import datetime
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from dashcam_parser import DashcamParser
+
 class TeslaCamMerger:
     def __init__(self, source_path, output_dir, progress_callback=None):
         self.source_path = source_path
@@ -65,7 +67,7 @@ class TeslaCamMerger:
             # Normal mode: assume on PATH
             return f"{cmd}.exe" if self.is_windows else cmd
 
-    def create_grid_command(self, cameras, output_path, codec="h264_videotoolbox"):
+    def create_grid_command(self, cameras, output_path, codec="h264_videotoolbox", ass_file=None):
         """Creates a ffmpeg command to merge camera views into a grid layout (1080p)."""
         # Define layout map: (key, x, y, width, height)
         layout = [
@@ -104,7 +106,13 @@ class TeslaCamMerger:
             filter_complex += f"{current_node}[v{k}] overlay=x={x}:y={y}:eof_action=pass [tmp{i}]; "
             current_node = f"[tmp{i}]"
         
-        final_node = current_node.strip("[]")
+        if ass_file:
+            # Escape the path for the FFMPEG filter
+            ass_escaped = ass_file.replace('\\', '\\\\').replace(':', '\\:').replace("'", "\\'")
+            filter_complex += f"{current_node} ass='{ass_escaped}' [with_ass]; "
+            final_node = "with_ass"
+        else:
+            final_node = current_node.strip("[]")
 
         # Bitrate and codec settings with compatibility flags for Apple QuickTime
         ffmpeg_bin = self.get_ffmpeg_path("ffmpeg")
@@ -121,6 +129,20 @@ class TeslaCamMerger:
         temp_output = os.path.join(self.output_dir, f"temp_{timestamp}.mp4")
         ffprobe_bin = self.get_ffmpeg_path("ffprobe")
         
+        # 提取行车数据 (SEI) 并生成字幕文件
+        ass_file = None
+        has_ass_data = False
+        if "front" in cameras:
+            ass_path = os.path.join(self.output_dir, f"sei_data_{timestamp}.ass")
+            parser = DashcamParser()
+            try:
+                has_ass_data = parser.extract_sei_to_ass(cameras["front"], ass_path, base_timestamp_str=timestamp)
+                if has_ass_data:
+                    ass_file = ass_path
+                    self.log(f"DEBUG: Successfully generated ASS subtitle for {timestamp}")
+            except Exception as e:
+                self.log(f"DEBUG: Failed to extract SEI data for {timestamp}: {e}")
+
         # 优化：如果临时分片已生成且不为空，则跳过（支持断点续传）
         if os.path.exists(temp_output) and os.path.getsize(temp_output) > 1000:
             self.log(f"DEBUG: Found cached file for {timestamp}, checking validity...")
@@ -137,7 +159,7 @@ class TeslaCamMerger:
         
         self.log(f"DEBUG: Processing {timestamp} - HW Start")
         # 自动尝试硬件加速（macOS 为 videotoolbox, Windows 默认为 nvenc）
-        cmd_hw = self.create_grid_command(cameras, temp_output, codec=self.default_hw_codec)
+        cmd_hw = self.create_grid_command(cameras, temp_output, codec=self.default_hw_codec, ass_file=ass_file)
         try:
             self.log(f"DEBUG: Executing HW CMD: {cmd_hw}")
             result = subprocess.run(cmd_hw, shell=True, capture_output=True, text=True, timeout=300)
@@ -151,11 +173,12 @@ class TeslaCamMerger:
                 # 如果是 Windows 且 nvenc 失败，尝试 qsv (Intel)
                 if self.is_windows and self.default_hw_codec == "h264_nvenc":
                     self.log("Retrying with h264_qsv (Intel HW acceleration)...")
-                    cmd_qsv = self.create_grid_command(cameras, temp_output, codec="h264_qsv")
+                    cmd_qsv = self.create_grid_command(cameras, temp_output, codec="h264_qsv", ass_file=ass_file)
                     result = subprocess.run(cmd_qsv, shell=True, capture_output=True, text=True, timeout=300)
                     if result.returncode == 0:
                         with self.lock:
                             if timestamp in self.active_tasks: del self.active_tasks[timestamp]
+                        if ass_file and os.path.exists(ass_file): os.remove(ass_file)
                         return temp_output
 
         except subprocess.TimeoutExpired:
@@ -165,7 +188,7 @@ class TeslaCamMerger:
         self.log(f"DEBUG: Retrying {timestamp} with software encoder (libx264)...")
         if os.path.exists(temp_output): os.remove(temp_output)
         
-        cmd_sw = self.create_grid_command(cameras, temp_output, codec="libx264 -preset veryfast")
+        cmd_sw = self.create_grid_command(cameras, temp_output, codec="libx264 -preset veryfast", ass_file=ass_file)
         try:
             self.log(f"DEBUG: Executing SW CMD: {cmd_sw}")
             result = subprocess.run(cmd_sw, shell=True, capture_output=True, text=True, timeout=600)
@@ -181,6 +204,7 @@ class TeslaCamMerger:
         
         with self.lock:
             if timestamp in self.active_tasks: del self.active_tasks[timestamp]
+        if ass_file and os.path.exists(ass_file): os.remove(ass_file)
         return None
 
     def merge_all(self, sample_count=None, target_date=None):

@@ -400,10 +400,13 @@ body {
     flex: 1;
     padding: 0 40px 10px 40px;
     /* 上右下左内边距，想调整内容位置改这里 */
-    overflow-y: auto;
+    overflow: hidden;
+    /* Prevent global scroll to allow inner scroll */
     display: flex;
     /* 弹性容器，确保子元素（如玻璃面板）能撑满 */
     flex-direction: column;
+    min-height: 0;
+    /* Important for flex children scrolling */
 }
 
 .content-panel {
@@ -1467,10 +1470,11 @@ input:checked+.slider:before {
     display: flex;
     flex-direction: column;
     flex: 1;
-    /* 让它占满剩余空间 */
     min-height: 0;
-    /* 允许 flex 子项缩小以允许滚动 */
+    /* Ensure it can shrink to trigger inner scroll */
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+    /* Header stays, list scrolls */
 }
 
 .selection-header {
@@ -1497,9 +1501,10 @@ input:checked+.slider:before {
 
 .video-list-container {
     flex: 1;
-    /* 占据选择区的剩余高度 */
-    overflow-y: auto;
-    padding-right: 10px;
+    overflow-y: overlay;
+    /* Use overlay if supported for cleaner look, or auto */
+    padding-right: 12px;
+    min-height: 0;
 }
 
 /* 针对 Webkit 浏览器的滚动条优化 */
