@@ -145,7 +145,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             # Vector: A perfectly centered Tesla-style steering wheel (R=50). Origin (0,0) is exactly the pivot center.
             angle = -meta.steering_wheel_angle 
             wheel_vector = r"m 0 -50 b 28 -50 50 -28 50 0 b 50 28 28 50 0 50 b -28 50 -50 28 -50 0 b -50 -28 -28 -50 0 -50 m 0 -42 b -23 -42 -42 -23 -42 0 b -42 23 -23 42 0 42 b 23 42 42 23 42 0 b 42 -23 23 -42 0 -42 m -42 -8 l 42 -8 l 42 8 l -42 8 m -18 8 l 18 8 l 12 42 l -12 42"
-            wheel_line = f"Dialogue: 0,{start_str},{end_str},DashWheel,,0,0,0,,{{\\an5\\pos(380,430)\\org(380,430)\\frz{-angle}}}{{\\p1}}{wheel_vector}{{\\p0}}\n"
+            wheel_line = f"Dialogue: 0,{start_str},{end_str},DashWheel,,0,0,0,,{{\\an7\\pos(380,430)\\org(380,430)\\frz{-angle}}}{{\\p1}}{wheel_vector}{{\\p0}}\n"
             lines.append(wheel_line)
             
         # ASS needs UTF-8 with BOM usually if it has CJK, but standard utf-8 works fine with ffmpeg.
