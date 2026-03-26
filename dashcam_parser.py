@@ -99,13 +99,34 @@ Style: HudWheel,Arial,48,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,10
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
-        
         lines = []
         frame_duration = 1.0 / self.fps
-        
-        # Every ~6 frames (6 fps updates)
         step = max(1, int(self.fps / 6)) 
         
+        def scale_vec(v_str, scale):
+            parts = v_str.split()
+            out = []
+            for p in parts:
+                try: out.append(str(int(int(p) * scale)))
+                except ValueError: out.append(p)
+            return " ".join(out)
+
+        SCALE = 0.55
+        
+        # Colors Config
+        CYAN, GREEN, RED, GREY = "&HFFFF00&", "&H96FF00&", "&H3232FF&", "&H444444&"
+        # Anchor Top-Left Position scaled
+        CX, CY = int(350 * SCALE), int(300 * SCALE) + 40
+        BBOX = scale_vec("m -320 -250 m 320 250", SCALE)
+
+        # Pre-scale GUI Graphics Vectors
+        hud_base = scale_vec("m -120 -5 l -280 15 l -280 150 l -180 210 l -120 210 l -120 -5 m 120 -5 l 280 15 l 280 150 l 180 210 l 120 210 l 120 -5 m -90 120 l 90 120 l 130 210 l -130 210 l -90 120", SCALE)
+        accents = scale_vec("m -250 25 l -250 140 m -220 25 l -220 170 m 250 25 l 250 140 m 220 25 l 220 170", SCALE)
+        arcs = scale_vec("m 0 -115 b 60 -115 110 -65 110 -5 b 110 55 60 105 0 105 b -60 105 -110 55 -110 -5 b -110 -65 -60 -115 0 -115", SCALE)
+        arcs_in = scale_vec("m 0 -105 b 55 -105 100 -60 100 -5 b 100 50 55 95 0 95 b -55 95 -100 50 -100 -5 b -100 -60 -55 -105 0 -105", SCALE)
+        shield = scale_vec("m -230 45 l -170 45 l -170 85 b -170 120 -200 135 -200 135 b -200 135 -230 120 -230 85 l -230 45", SCALE)
+        bar_frames = scale_vec("m 180 50 l 200 50 l 200 160 l 180 160 l 180 50 m 230 50 l 250 50 l 250 160 l 230 160 l 230 50", SCALE)
+
         for i in range(0, len(messages), step):
             meta = messages[i]
             
@@ -125,68 +146,60 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             def evt(layer, style, x, y, text):
                 return f"Dialogue: {layer},{start_str},{end_str},{style},,0,0,0,,{{\\pos({x},{y})}}{text}\n"
 
-            # Colors & Layout Config
-            CYAN = "&HFFFF00&"
-            GREEN = "&H96FF00&"
-            RED = "&H3232FF&"
-            GREY = "&H444444&"
-            CX, CY = 350, 300
-            BBOX = "m -320 -250 m 320 250"
-
-            # GUI Graphics Vectors
-            hud_base = "m -120 -5 l -280 15 l -280 150 l -180 210 l -120 210 l -120 -5 m 120 -5 l 280 15 l 280 150 l 180 210 l 120 210 l 120 -5 m -90 120 l 90 120 l 130 210 l -130 210 l -90 120"
-            accents = "m -250 25 l -250 140 m -220 25 l -220 170 m 250 25 l 250 140 m 220 25 l 220 170"
-            arcs = "m 0 -115 b 60 -115 110 -65 110 -5 b 110 55 60 105 0 105 b -60 105 -110 55 -110 -5 b -110 -65 -60 -115 0 -115"
-            arcs_in = "m 0 -105 b 55 -105 100 -60 100 -5 b 100 50 55 95 0 95 b -55 95 -100 50 -100 -5 b -100 -60 -55 -105 0 -105"
-            shield = "m -230 45 l -170 45 l -170 85 b -170 120 -200 135 -200 135 b -200 135 -230 120 -230 85 l -230 45"
-            bar_frames = "m 180 50 l 200 50 l 200 160 l 180 160 l 180 50 m 230 50 l 250 50 l 250 160 l 230 160 l 230 50"
-
             # Draw Layer 0 & 1 (Static HUD background frames)
             lines.append(evt(0, "HudG", CX, CY, f"{{\\an5\\1c&H111111&\\1a&HE0&\\3c{CYAN}\\3a&H40&\\p1}}{hud_base} {BBOX}{{\\p0}}"))
             lines.append(evt(0, "HudG", CX, CY, f"{{\\an5\\1a&HFF&\\bord2\\3c{CYAN}\\3a&H80&\\p1}}{accents} {BBOX}{{\\p0}}"))
-            lines.append(evt(1, "HudG", CX, CY, f"{{\\an5\\1a&HFF&\\bord6\\3c{CYAN}\\3a&HDD&\\p1}}{arcs} {BBOX}{{\\p0}}"))
-            lines.append(evt(1, "HudF", CX, CY, f"{{\\an5\\1a&HFF&\\bord2\\3c{CYAN}\\3a&H40&\\p1}}{arcs_in} {BBOX}{{\\p0}}"))
+            lines.append(evt(1, "HudG", CX, CY, f"{{\\an5\\1a&HFF&\\bord4\\3c{CYAN}\\3a&HDD&\\p1}}{arcs} {BBOX}{{\\p0}}"))
+            lines.append(evt(1, "HudF", CX, CY, f"{{\\an5\\1a&HFF&\\bord1\\3c{CYAN}\\3a&H40&\\p1}}{arcs_in} {BBOX}{{\\p0}}"))
             
             shield_fill_alpha = "&HAA&" if meta.autopilot_state else "&HEE&"
             shield_fill_color = "&H96FF00&" if meta.autopilot_state else "&H333333&"
-            lines.append(evt(1, "HudF", CX, CY, f"{{\\an5\\1a{shield_fill_alpha}\\1c{shield_fill_color}\\bord3\\3c{CYAN}\\p1}}{shield} {BBOX}{{\\p0}}"))
+            lines.append(evt(1, "HudF", CX, CY, f"{{\\an5\\1a{shield_fill_alpha}\\1c{shield_fill_color}\\bord2\\3c{CYAN}\\p1}}{shield} {BBOX}{{\\p0}}"))
             lines.append(evt(1, "HudF", CX, CY, f"{{\\an5\\1a&HFF&\\bord2\\3c{CYAN}\\3a&H66&\\p1}}{bar_frames} {BBOX}{{\\p0}}"))
 
             # Dynamic Bars
             accel_fill_y = 160 - int(110 * accel_pct)
-            accel_fill = f"m 232 {accel_fill_y} l 248 {accel_fill_y} l 248 158 l 232 158 l 232 {accel_fill_y}"
+            accel_fill = scale_vec(f"m 232 {accel_fill_y} l 248 {accel_fill_y} l 248 158 l 232 158 l 232 {accel_fill_y}", SCALE)
             lines.append(evt(2, "HudF", CX, CY, f"{{\\an5\\1c{GREEN}\\bord0\\3a&HFF&\\p1}}{accel_fill} {BBOX}{{\\p0}}"))
             if brake_applied:
-                brake_fill = "m 182 52 l 198 52 l 198 158 l 182 158 l 182 52"
+                brake_fill = scale_vec("m 182 52 l 198 52 l 198 158 l 182 158 l 182 52", SCALE)
                 lines.append(evt(2, "HudF", CX, CY, f"{{\\an5\\1c{RED}\\bord0\\3a&HFF&\\p1}}{brake_fill} {BBOX}{{\\p0}}"))
 
-            # Texts and Indicators
-            lines.append(evt(3, "HudSpeed", CX, CY - 30, speed_val))
-            lines.append(evt(3, "HudT", CX, CY + 50, "KM/H"))
-            lines.append(evt(3, "HudGear", CX, CY + 105, gear))
+            # Offset Texts
+            def off(ox, oy): return CX + int(ox * SCALE), CY + int(oy * SCALE)
+            
+            lines.append(evt(3, "HudSpeed", *off(0, -30), f"{{\\fs{int(110*SCALE)}}}{speed_val}"))
+            lines.append(evt(3, "HudT", *off(0, 50), f"{{\\fs{int(24*SCALE)}}}KM/H"))
+            lines.append(evt(3, "HudGear", *off(0, 105), f"{{\\fs{int(50*SCALE)}}}{gear}"))
 
-            lines.append(evt(3, "HudF", CX - 200, CY + 85, f"{{\\fs50}}A"))
-            lines.append(evt(3, "HudT", CX - 200, CY + 170, ap))
+            lines.append(evt(3, "HudF", *off(-200, 85), f"{{\\fs{int(45*SCALE)}}}A"))
+            lines.append(evt(3, "HudT", *off(-200, 150), f"{{\\fs{int(18*SCALE)}}}{ap}"))
 
-            lines.append(evt(3, "HudT", CX + 190, CY + 35, f"{{\\c{RED}\\fs22}}BRAKE"))
-            lines.append(evt(3, "HudT", CX + 240, CY + 35, f"{{\\c{GREEN}\\fs22}}ACCEL"))
-            lines.append(evt(3, "HudT", CX + 215, CY + 185, f"{{\\fs22}}加速: {int(accel_pct*100)}%"))
-            lines.append(evt(3, "HudT", CX + 215, CY + 215, f"{{\\fs22}}刹车: {'已踩下' if brake_applied else '未踩下'}"))
+            lines.append(evt(3, "HudT", *off(190, 35), f"{{\\c{RED}\\fs{int(18*SCALE)}}}BRAKE"))
+            lines.append(evt(3, "HudT", *off(240, 35), f"{{\\c{GREEN}\\fs{int(18*SCALE)}}}ACCEL"))
+            lines.append(evt(3, "HudT", *off(215, 185), f"{{\\fs{int(18*SCALE)}}}加速: {int(accel_pct*100)}%"))
+            lines.append(evt(3, "HudT", *off(215, 210), f"{{\\fs{int(18*SCALE)}}}刹车: {'已踩下' if brake_applied else '未踩下'}"))
 
             # Steering Wheel & Blinkers
             angle = -meta.steering_wheel_angle
-            wheel_vector = r"m 0 -40 b 22 -40 40 -22 40 0 b 40 22 22 40 0 40 b -22 40 -40 22 -40 0 b -40 -22 -22 -40 0 -40 m 0 -33 b -18 -33 -33 -18 -33 0 b -33 18 -18 33 0 33 b 18 33 33 18 33 0 b 33 -18 18 -33 0 -33 m -33 -6 l 33 -6 l 33 6 l -33 6 m -14 6 l 14 6 l 9 33 l -9 33"
-            lines.append(evt(3, "HudWheel", CX, CY + 165, f"{{\\1a&H33&\\3c{GREY}\\bord2\\an5\\org({CX},{CY+165})\\frz{-angle}\\p1}}{wheel_vector} {BBOX}{{\\p0}}"))
-            lines.append(evt(4, "HudT", CX, CY + 165, f"{{\\fs24\\c{CYAN}}}{-angle:.0f}°"))
+            # We explicitly REMOVE BBOX from the wheel_vector. By stripping BBOX, the geometric center is (0,0) of the wheel shape itself.
+            wheel_vector = scale_vec(r"m 0 -40 b 22 -40 40 -22 40 0 b 40 22 22 40 0 40 b -22 40 -40 22 -40 0 b -40 -22 -22 -40 0 -40 m 0 -33 b -18 -33 -33 -18 -33 0 b -33 18 -18 33 0 33 b 18 33 33 18 33 0 b 33 -18 18 -33 0 -33 m -33 -6 l 33 -6 l 33 6 l -33 6 m -14 6 l 14 6 l 9 33 l -9 33", SCALE)
+            WX, WY = off(0, 165)
+            # using \an7 places the Top-Left of the shape (-22, -22) at the \pos coord. 
+            # We shift \pos to WX-22, WY-22 so the center perfectly rests at WX, WY. \org(WX,WY) provides the flawless rotation pivot.
+            an7_x = WX - int(40 * SCALE)
+            an7_y = WY - int(40 * SCALE)
+            lines.append(evt(3, "HudWheel", an7_x, an7_y, f"{{\\1a&H33&\\3c{GREY}\\bord2\\an7\\org({WX},{WY})\\frz{-angle}\\p1}}{wheel_vector}{{\\p0}}"))
+            lines.append(evt(4, "HudT", WX, WY, f"{{\\fs{int(18*SCALE)}\\c{CYAN}}}{-angle:.0f}°"))
 
             l_color = GREEN if meta.blinker_on_left else GREY
             r_color = GREEN if meta.blinker_on_right else GREY
-            lines.append(evt(3, "HudT", CX - 60, CY + 165, f"{{\\c{l_color}\\fs40}}⬅"))
-            lines.append(evt(3, "HudT", CX + 60, CY + 165, f"{{\\c{r_color}\\fs40}}➡"))
+            lines.append(evt(3, "HudT", *off(-60, 165), f"{{\\c{l_color}\\fs{int(30*SCALE)}}}⬅"))
+            lines.append(evt(3, "HudT", *off(60, 165), f"{{\\c{r_color}\\fs{int(30*SCALE)}}}➡"))
 
             if base_dt:
                 current_dt = base_dt + datetime.timedelta(seconds=start_time)
-                lines.append(evt(3, "HudT", CX, CY + 245, current_dt.strftime('%Y-%m-%d %H:%M:%S')))
+                lines.append(evt(3, "HudT", CX, CY + int(245 * SCALE), f"{{\\fs{int(24*SCALE)}}}{current_dt.strftime('%Y-%m-%d %H:%M:%S')}"))
             
         # ASS needs UTF-8 with BOM usually if it has CJK, but standard utf-8 works fine with ffmpeg.
         with codecs.open(out_path, "w", "utf-8") as f:
