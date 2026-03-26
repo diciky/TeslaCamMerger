@@ -89,8 +89,12 @@ PlayResY: 1080
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: DashData,Arial,48,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,2,2,7,40,40,40,1
-Style: DashWheel,Arial,48,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,2,2,5,0,0,0,1
+Style: HudG,Arial,48,&H80FFFFFF,&H000000FF,&H80FFFF00,&H80000000,-1,0,0,0,100,100,0,0,1,3,0,5,0,0,0,1
+Style: HudF,Arial,48,&H00FFFFFF,&H000000FF,&HFFFF00&,&H80000000,-1,0,0,0,100,100,0,0,1,1,0,5,0,0,0,1
+Style: HudT,Arial,24,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,1,0,5,0,0,0,1
+Style: HudSpeed,Arial,110,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,2,5,5,0,0,0,1
+Style: HudGear,Arial,60,&HFFFF00&,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,1,0,5,0,0,0,1
+Style: HudWheel,Arial,48,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,1,0,5,0,0,0,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -99,8 +103,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         lines = []
         frame_duration = 1.0 / self.fps
         
-        # Downsample to ~5 times a second for readability? 
-        # Actually every 6 frames = ~166ms = 6 fps.
+        # Every ~6 frames (6 fps updates)
         step = max(1, int(self.fps / 6)) 
         
         for i in range(0, len(messages), step):
@@ -110,43 +113,80 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             next_i = min(i + step, len(messages))
             end_time = next_i * frame_duration
             
-            speed = format_speed(meta.vehicle_speed_mps)
+            speed_val = f"{meta.vehicle_speed_mps * 3.6:.0f}"
             gear = format_gear(meta.gear_state)
             ap = format_autopilot(meta.autopilot_state)
-            accel = f"{meta.accelerator_pedal_position:.0f}%"
-            brake = "已踩下" if meta.brake_applied else "未踩下"
-            l_icon, r_icon = format_blinker(meta.blinker_on_left, meta.blinker_on_right)
-            steer = f"{meta.steering_wheel_angle:.0f}°"
-            
-            text_lines = []
-            if base_dt:
-                current_dt = base_dt + datetime.timedelta(seconds=start_time)
-                text_lines.append(f"日　期:  {current_dt.strftime('%Y-%m-%d %H:%M:%S')}")
-
-            text_lines.extend([
-                f"车　速:  {speed}",
-                f"挡　位:  {gear}",
-                f"自动驾驶:  {ap}",
-                f"加速踏板:  {accel}",
-                f"刹　车:  {brake}",
-                f"转向灯:  {l_icon}   {r_icon}",
-                f"方向盘:  {steer}"
-            ])
-            text = r"\N".join(text_lines)
+            accel_pct = max(0.0, min(1.0, meta.accelerator_pedal_position / 100.0))
+            brake_applied = meta.brake_applied
             
             start_str = format_time_ass(start_time)
             end_str = format_time_ass(end_time)
             
-            # Text block at Top-Left
-            ass_line = f"Dialogue: 0,{start_str},{end_str},DashData,,0,0,0,,{{\\pos(40,40)}}{text}\n"
-            lines.append(ass_line)
+            def evt(layer, style, x, y, text):
+                return f"Dialogue: {layer},{start_str},{end_str},{style},,0,0,0,,{{\\pos({x},{y})}}{text}\n"
+
+            # Colors & Layout Config
+            CYAN = "&HFFFF00&"
+            GREEN = "&H96FF00&"
+            RED = "&H3232FF&"
+            GREY = "&H444444&"
+            CX, CY = 350, 300
+            BBOX = "m -320 -250 m 320 250"
+
+            # GUI Graphics Vectors
+            hud_base = "m -120 -5 l -280 15 l -280 150 l -180 210 l -120 210 l -120 -5 m 120 -5 l 280 15 l 280 150 l 180 210 l 120 210 l 120 -5 m -90 120 l 90 120 l 130 210 l -130 210 l -90 120"
+            accents = "m -250 25 l -250 140 m -220 25 l -220 170 m 250 25 l 250 140 m 220 25 l 220 170"
+            arcs = "m 0 -115 b 60 -115 110 -65 110 -5 b 110 55 60 105 0 105 b -60 105 -110 55 -110 -5 b -110 -65 -60 -115 0 -115"
+            arcs_in = "m 0 -105 b 55 -105 100 -60 100 -5 b 100 50 55 95 0 95 b -55 95 -100 50 -100 -5 b -100 -60 -55 -105 0 -105"
+            shield = "m -230 45 l -170 45 l -170 85 b -170 120 -200 135 -200 135 b -200 135 -230 120 -230 85 l -230 45"
+            bar_frames = "m 180 50 l 200 50 l 200 160 l 180 160 l 180 50 m 230 50 l 250 50 l 250 160 l 230 160 l 230 50"
+
+            # Draw Layer 0 & 1 (Static HUD background frames)
+            lines.append(evt(0, "HudG", CX, CY, f"{{\\an5\\1c&H111111&\\1a&HE0&\\3c{CYAN}\\3a&H40&\\p1}}{hud_base} {BBOX}{{\\p0}}"))
+            lines.append(evt(0, "HudG", CX, CY, f"{{\\an5\\1a&HFF&\\bord2\\3c{CYAN}\\3a&H80&\\p1}}{accents} {BBOX}{{\\p0}}"))
+            lines.append(evt(1, "HudG", CX, CY, f"{{\\an5\\1a&HFF&\\bord6\\3c{CYAN}\\3a&HDD&\\p1}}{arcs} {BBOX}{{\\p0}}"))
+            lines.append(evt(1, "HudF", CX, CY, f"{{\\an5\\1a&HFF&\\bord2\\3c{CYAN}\\3a&H40&\\p1}}{arcs_in} {BBOX}{{\\p0}}"))
             
-            # Steering Wheel Animation
-            # Vector: A perfectly centered Tesla-style steering wheel (R=50). Origin (0,0) is exactly the pivot center.
-            angle = -meta.steering_wheel_angle 
-            wheel_vector = r"m 0 -50 b 28 -50 50 -28 50 0 b 50 28 28 50 0 50 b -28 50 -50 28 -50 0 b -50 -28 -28 -50 0 -50 m 0 -42 b -23 -42 -42 -23 -42 0 b -42 23 -23 42 0 42 b 23 42 42 23 42 0 b 42 -23 23 -42 0 -42 m -42 -8 l 42 -8 l 42 8 l -42 8 m -18 8 l 18 8 l 12 42 l -12 42"
-            wheel_line = f"Dialogue: 0,{start_str},{end_str},DashWheel,,0,0,0,,{{\\an7\\pos(380,430)\\org(380,430)\\frz{-angle}}}{{\\p1}}{wheel_vector}{{\\p0}}\n"
-            lines.append(wheel_line)
+            shield_fill_alpha = "&HAA&" if meta.autopilot_state else "&HEE&"
+            shield_fill_color = "&H96FF00&" if meta.autopilot_state else "&H333333&"
+            lines.append(evt(1, "HudF", CX, CY, f"{{\\an5\\1a{shield_fill_alpha}\\1c{shield_fill_color}\\bord3\\3c{CYAN}\\p1}}{shield} {BBOX}{{\\p0}}"))
+            lines.append(evt(1, "HudF", CX, CY, f"{{\\an5\\1a&HFF&\\bord2\\3c{CYAN}\\3a&H66&\\p1}}{bar_frames} {BBOX}{{\\p0}}"))
+
+            # Dynamic Bars
+            accel_fill_y = 160 - int(110 * accel_pct)
+            accel_fill = f"m 232 {accel_fill_y} l 248 {accel_fill_y} l 248 158 l 232 158 l 232 {accel_fill_y}"
+            lines.append(evt(2, "HudF", CX, CY, f"{{\\an5\\1c{GREEN}\\bord0\\3a&HFF&\\p1}}{accel_fill} {BBOX}{{\\p0}}"))
+            if brake_applied:
+                brake_fill = "m 182 52 l 198 52 l 198 158 l 182 158 l 182 52"
+                lines.append(evt(2, "HudF", CX, CY, f"{{\\an5\\1c{RED}\\bord0\\3a&HFF&\\p1}}{brake_fill} {BBOX}{{\\p0}}"))
+
+            # Texts and Indicators
+            lines.append(evt(3, "HudSpeed", CX, CY - 30, speed_val))
+            lines.append(evt(3, "HudT", CX, CY + 50, "KM/H"))
+            lines.append(evt(3, "HudGear", CX, CY + 105, gear))
+
+            lines.append(evt(3, "HudF", CX - 200, CY + 85, f"{{\\fs50}}A"))
+            lines.append(evt(3, "HudT", CX - 200, CY + 170, ap))
+
+            lines.append(evt(3, "HudT", CX + 190, CY + 35, f"{{\\c{RED}\\fs22}}BRAKE"))
+            lines.append(evt(3, "HudT", CX + 240, CY + 35, f"{{\\c{GREEN}\\fs22}}ACCEL"))
+            lines.append(evt(3, "HudT", CX + 215, CY + 185, f"{{\\fs22}}加速: {int(accel_pct*100)}%"))
+            lines.append(evt(3, "HudT", CX + 215, CY + 215, f"{{\\fs22}}刹车: {'已踩下' if brake_applied else '未踩下'}"))
+
+            # Steering Wheel & Blinkers
+            angle = -meta.steering_wheel_angle
+            wheel_vector = r"m 0 -40 b 22 -40 40 -22 40 0 b 40 22 22 40 0 40 b -22 40 -40 22 -40 0 b -40 -22 -22 -40 0 -40 m 0 -33 b -18 -33 -33 -18 -33 0 b -33 18 -18 33 0 33 b 18 33 33 18 33 0 b 33 -18 18 -33 0 -33 m -33 -6 l 33 -6 l 33 6 l -33 6 m -14 6 l 14 6 l 9 33 l -9 33"
+            lines.append(evt(3, "HudWheel", CX, CY + 165, f"{{\\1a&H33&\\3c{GREY}\\bord2\\an5\\org({CX},{CY+165})\\frz{-angle}\\p1}}{wheel_vector} {BBOX}{{\\p0}}"))
+            lines.append(evt(4, "HudT", CX, CY + 165, f"{{\\fs24\\c{CYAN}}}{-angle:.0f}°"))
+
+            l_color = GREEN if meta.blinker_on_left else GREY
+            r_color = GREEN if meta.blinker_on_right else GREY
+            lines.append(evt(3, "HudT", CX - 60, CY + 165, f"{{\\c{l_color}\\fs40}}⬅"))
+            lines.append(evt(3, "HudT", CX + 60, CY + 165, f"{{\\c{r_color}\\fs40}}➡"))
+
+            if base_dt:
+                current_dt = base_dt + datetime.timedelta(seconds=start_time)
+                lines.append(evt(3, "HudT", CX, CY + 245, current_dt.strftime('%Y-%m-%d %H:%M:%S')))
             
         # ASS needs UTF-8 with BOM usually if it has CJK, but standard utf-8 works fine with ffmpeg.
         with codecs.open(out_path, "w", "utf-8") as f:
